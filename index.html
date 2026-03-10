@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序法 (Bubble Sort) 視覺化工具</title>
+    <style>
+        :root {
+            --bar-color: #3498db;
+            --compare-color: #f1c40f;
+            --swap-color: #e74c3c;
+            --sorted-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --header-color: #34495e;
+            --card-bg-color: #ffffff;
+            --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode {
+            --bar-color: #3498db;
+            --compare-color: #f1c40f;
+            --swap-color: #e74c3c;
+            --sorted-color: #27ae60;
+            --background-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --header-color: #ecf0f1;
+            --card-bg-color: #34495e;
+            --shadow-color: rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--header-color);
+        }
+
+        h1, h2 {
+            font-weight: 300;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--header-color);
+            border-bottom: 2px solid var(--bar-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .visualization-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        #bar-container {
+            display: flex;
+            align-items: flex-end;
+            height: 250px;
+            width: 100%;
+            border-bottom: 2px solid #bdc3c7;
+        }
+
+        .bar {
+            flex-grow: 1;
+            background-color: var(--bar-color);
+            margin: 0 2px;
+            transition: height 0.3s ease, background-color 0.3s ease;
+            position: relative;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text-color);
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--header-color);
+            color: var(--background-color);
+            border: 1px solid var(--bar-color);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        body.dark-mode button {
+             background-color: var(--card-bg-color);
+             color: var(--text-color);
+        }
+
+
+        button:hover:not(:disabled) {
+            opacity: 0.8;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>氣泡排序法 (Bubble Sort) 視覺化工具</h1>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>視覺化展示</h2>
+                <div class="visualization-area">
+                    <div id="bar-container"></div>
+                    <div class="controls">
+                        <button id="play-pause-btn">自動播放</button>
+                        <button id="next-step-btn">下一步 &rarr;</button>
+                        <button id="reset-btn">重設陣列</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>操作原理</h2>
+                <p>氣泡排序法是一種簡單的排序演算法。它重複地走訪過要排序的數列，一次比較兩個元素，如果他們的順序錯誤就把他們交換過來。走訪數列的工作是重複地進行，直到沒有任何元素需要交換，這表示數列已經排序完成。</p>
+                <p>這個演算法的名字由來，是因為越小的元素會經由交換慢慢「浮」到數列的頂端，就像氣泡一樣。</p>
+            </div>
+
+            <div class="card">
+                <h2>操作過程</h2>
+                <ol>
+                    <li>從數列的第一個元素開始，比較它與下一個元素。</li>
+                    <li>如果第一個元素比第二個元素大，就交換它們的位置。</li>
+                    <li>接著移動到下一個元素，重複同樣的比較與交換，直到數列的末端。這一輪結束後，最大的元素將會被放置在數列的正確位置。</li>
+                    <li>重複以上步驟，但每一次都減少一次比較的範圍（因為最大的元素已經就位）。</li>
+                    <li>持續進行，直到整個數列排序完成。</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>複雜度分析</h2>
+                <ul>
+                    <li><strong>最差時間複雜度 (Worst Case):</strong> <code>O(n²)</code><br>當數列完全是反向排序時，每一輪比較都需要進行 n-1, n-2, ... 次交換。</li>
+                    <li><strong>最佳時間複雜度 (Best Case):</strong> <code>O(n)</code><br>當數列已經是排序好的狀態時，只需要一輪完整的比較，沒有任何交換發生，即可確定排序完成。</li>
+                    <li><strong>平均時間複雜度 (Average Case):</strong> <code>O(n²)</code><br>在隨機排列的數列中，平均情況下的效能與最差情況相似。</li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>氣泡排序法是一種原地(in-place)演算法，它只需要一個額外的臨時變數來輔助交換，因此空間複雜度為常數級。</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <div id="theme-toggle" title="切換主題">
+        <span id="theme-icon">🌙</span>
+    </div>
+
+    <script>
+        const barContainer = document.getElementById('bar-container');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        let array = [];
+        const ARRAY_SIZE = 15;
+        const DELAY_MS = 200;
+
+        // Sorting state
+        let i = 0;
+        let j = 0;
+        let swapped_in_pass = false;
+        let isSorting = false;
+        let isPaused = true;
+        let sortingInterval = null;
+
+        // Generate a new random array and render it
+        const resetArray = () => {
+            clearInterval(sortingInterval);
+            array = [];
+            for (let k = 0; k < ARRAY_SIZE; k++) {
+                array.push(Math.floor(Math.random() * 90) + 10);
+            }
+            
+            i = 0;
+            j = 0;
+            swapped_in_pass = false;
+            isSorting = false;
+            isPaused = true;
+
+            renderBars();
+            updateButtons();
+        };
+
+        // Render the bars based on the current array state
+        const renderBars = (compareIndices = [], sortedIndex = -1) => {
+            barContainer.innerHTML = '';
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${value}%`;
+
+                if (compareIndices.includes(index)) {
+                    bar.style.backgroundColor = 'var(--compare-color)';
+                } else if (index >= sortedIndex && sortedIndex !== -1) {
+                    bar.style.backgroundColor = 'var(--sorted-color)';
+                }
+                
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+        
+        const updateButtons = () => {
+            playPauseBtn.innerText = isPaused ? "自動播放" : "暫停";
+
+            if (isSorting) {
+                resetBtn.disabled = true;
+                playPauseBtn.disabled = false;
+                nextStepBtn.disabled = !isPaused;
+            } else { // Not sorting (either before start or after finish)
+                resetBtn.disabled = false;
+                playPauseBtn.disabled = false;
+                nextStepBtn.disabled = false;
+                 // If sort is finished, disable step/pause buttons
+                if (i >= array.length -1) {
+                    playPauseBtn.disabled = true;
+                    nextStepBtn.disabled = true;
+                }
+            }
+        };
+
+        // Perform one step of the Bubble Sort algorithm
+        const nextStep = () => {
+            if (!isSorting) {
+                isSorting = true;
+            }
+
+            // If sort is finished, stop everything
+            if (i >= array.length - 1) {
+                isSorting = false;
+                isPaused = true;
+                clearInterval(sortingInterval);
+                renderBars([], 0); // Mark all as sorted
+                updateButtons();
+                return;
+            }
+
+            // Highlight elements being compared
+            renderBars([j, j + 1], array.length - i);
+
+            if (array[j] > array[j + 1]) {
+                swapped_in_pass = true;
+                // Swap
+                [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                // Re-render to show the result of the swap
+                 renderBars([j, j + 1], array.length - i);
+            }
+            
+            // Advance pointers
+            j++;
+            if (j >= array.length - 1 - i) {
+                // A pass is complete
+                // Check for optimization: if no swaps in a full pass, we're done
+                if (swapped_in_pass === false) {
+                    i = array.length - 1; // Force termination in the next step
+                } else {
+                    swapped_in_pass = false; // Reset for the next pass
+                }
+                
+                i++;
+                j = 0;
+            }
+
+            updateButtons();
+        };
+
+        const playPause = () => {
+            if (isPaused) {
+                isPaused = false;
+                // If sort is already finished, don't start it again
+                if (i >= array.length - 1) {
+                    isPaused = true;
+                    return;
+                }
+                if (!isSorting) {
+                  isSorting = true;
+                }
+                sortingInterval = setInterval(nextStep, DELAY_MS);
+            } else {
+                isPaused = true;
+                clearInterval(sortingInterval);
+            }
+            updateButtons();
+        };
+
+        // Event listeners
+        playPauseBtn.addEventListener('click', playPause);
+        nextStepBtn.addEventListener('click', () => {
+            if (isPaused) {
+                nextStep();
+            }
+        });
+        resetBtn.addEventListener('click', resetArray);
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            resetArray();
+            
+            // Theme toggle logic
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const currentTheme = localStorage.getItem('theme');
+
+            if (currentTheme) {
+                document.body.classList.add(currentTheme);
+                if (currentTheme === 'dark-mode') {
+                    themeIcon.innerText = '☀️';
+                }
+            }
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                let theme = '';
+                if (document.body.classList.contains('dark-mode')) {
+                    themeIcon.innerText = '☀️';
+                    theme = 'dark-mode';
+                } else {
+                    themeIcon.innerText = '🌙';
+                }
+                localStorage.setItem('theme', theme);
+            });
+        });
+
+    </script>
+
+</body>
+</html>
+
