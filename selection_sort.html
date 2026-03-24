@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣泡排序法 (Bubble Sort) 視覺化工具</title>
+    <title>選擇排序法 (Selection Sort) 視覺化工具</title>
     <style>
         :root {
             --bar-color: #3498db;
@@ -228,7 +228,7 @@
     <a href="index.html" class="back-home">← 回首頁</a>
     <div class="container">
         <header>
-            <h1>氣泡排序法 (Bubble Sort) 視覺化工具</h1>
+            <h1>選擇排序法 (Selection Sort) 視覺化工具</h1>
         </header>
 
         <main>
@@ -257,28 +257,25 @@
 
             <div class="card">
                 <h2>操作原理</h2>
-                <p>氣泡排序法是一種簡單的排序演算法。它重複地走訪過要排序的數列，一次比較兩個元素，如果他們的順序錯誤就把他們交換過來。走訪數列的工作是重複地進行，直到沒有任何元素需要交換，這表示數列已經排序完成。</p>
-                <p>這個演算法的名字由來，是因為越小的元素會經由交換慢慢「浮」到數列的頂端，就像氣泡一樣。</p>
+                <p>選擇排序法是一種簡單直觀的排序演算法。它的工作原理是：在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置，然後再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。以此類推，直到所有元素均排序完畢。</p>
             </div>
 
             <div class="card">
                 <h2>操作過程</h2>
                 <ol>
-                    <li>從數列的第一個元素開始，比較它與下一個元素。</li>
-                    <li>如果第一個元素比第二個元素大，就交換它們的位置。</li>
-                    <li>接著移動到下一個元素，重複同樣的比較與交換，直到數列的末端。這一輪結束後，最大的元素將會被放置在數列的正確位置。</li>
-                    <li>重複以上步驟，但每一次都減少一次比較的範圍（因為最大的元素已經就位）。</li>
-                    <li>持續進行，直到整個數列排序完成。</li>
+                    <li>在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置。</li>
+                    <li>再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。</li>
+                    <li>重複第二步，直到所有元素均排序完畢。</li>
                 </ol>
             </div>
 
             <div class="card">
                 <h2>複雜度分析</h2>
                 <ul>
-                    <li><strong>最差時間複雜度 (Worst Case):</strong> <code>O(n²)</code><br>當數列完全是反向排序時，每一輪比較都需要進行 n-1, n-2, ... 次交換。</li>
-                    <li><strong>最佳時間複雜度 (Best Case):</strong> <code>O(n)</code><br>當數列已經是排序好的狀態時，只需要一輪完整的比較，沒有任何交換發生，即可確定排序完成。</li>
-                    <li><strong>平均時間複雜度 (Average Case):</strong> <code>O(n²)</code><br>在隨機排列的數列中，平均情況下的效能與最差情況相似。</li>
-                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>氣泡排序法是一種原地(in-place)演算法，它只需要一個額外的臨時變數來輔助交換，因此空間複雜度為常數級。</li>
+                    <li><strong>最差時間複雜度 (Worst Case):</strong> <code>O(n²)</code></li>
+                    <li><strong>最佳時間複雜度 (Best Case):</strong> <code>O(n²)</code></li>
+                    <li><strong>平均時間複雜度 (Average Case):</strong> <code>O(n²)</code></li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code></li>
                 </ul>
             </div>
         </main>
@@ -305,7 +302,7 @@
         // Sorting state
         let i = 0;
         let j = 0;
-        let swapped_in_pass = false;
+        let min_idx = 0;
         let isSorting = false;
         let isPaused = true;
         let sortingInterval = null;
@@ -323,8 +320,8 @@
             }
             
             i = 0;
-            j = 0;
-            swapped_in_pass = false;
+            j = i + 1;
+            min_idx = i;
             isSorting = false;
             isPaused = true;
 
@@ -342,7 +339,7 @@
 
                 if (compareIndices.includes(index)) {
                     bar.style.backgroundColor = 'var(--compare-color)';
-                } else if (index >= sortedIndex && sortedIndex !== -1) {
+                } else if (index < sortedIndex) {
                     bar.style.backgroundColor = 'var(--sorted-color)';
                 }
                 
@@ -376,10 +373,13 @@
             }
         };
 
-        // Perform one step of the Bubble Sort algorithm
+        // Perform one step of the Selection Sort algorithm
         const nextStep = () => {
             if (!isSorting) {
                 isSorting = true;
+                i = 0;
+                j = i + 1;
+                min_idx = i;
             }
 
             // If sort is finished, stop everything
@@ -387,36 +387,31 @@
                 isSorting = false;
                 isPaused = true;
                 clearInterval(sortingInterval);
-                renderBars([], 0); // Mark all as sorted
+                renderBars([], array.length); // Mark all as sorted
                 updateButtons();
                 return;
             }
 
             // Highlight elements being compared
-            renderBars([j, j + 1], array.length - i);
+            renderBars([j, min_idx], i);
 
-            if (array[j] > array[j + 1]) {
-                swapped_in_pass = true;
-                // Swap
-                [array[j], array[j + 1]] = [array[j + 1], array[j]];
-                // Re-render to show the result of the swap
-                 renderBars([j, j + 1], array.length - i);
+            if (array[j] < array[min_idx]) {
+                min_idx = j;
             }
             
-            // Advance pointers
             j++;
-            if (j >= array.length - 1 - i) {
-                // A pass is complete
-                // Check for optimization: if no swaps in a full pass, we're done
-                if (swapped_in_pass === false) {
-                    i = array.length - 1; // Force termination in the next step
-                } else {
-                    swapped_in_pass = false; // Reset for the next pass
+
+            if (j >= array.length) {
+                // A pass is complete, swap the found minimum with the first element of the unsorted part
+                if (min_idx !== i) {
+                    [array[i], array[min_idx]] = [array[min_idx], array[i]];
                 }
                 
                 i++;
-                j = 0;
+                j = i + 1;
+                min_idx = i;
             }
+            
 
             updateButtons();
         };
@@ -431,6 +426,9 @@
                 }
                 if (!isSorting) {
                   isSorting = true;
+                  i = 0;
+                  j = i + 1;
+                  min_idx = i;
                 }
                 sortingInterval = setInterval(nextStep, DELAY_MS);
             } else {
@@ -473,7 +471,6 @@
                 sortingInterval = setInterval(nextStep, DELAY_MS);
             }
         });
-
 
         // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
