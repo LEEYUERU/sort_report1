@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插入排序法 (Insertion Sort) 視覺化工具</title>
+    <style>
+        :root {
+            --bar-color: #3498db;
+            --compare-color: #f1c40f;
+            --swap-color: #e74c3c;
+            --sorted-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --header-color: #34495e;
+            --card-bg-color: #ffffff;
+            --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode {
+            --bar-color: #3498db;
+            --compare-color: #f1c40f;
+            --swap-color: #e74c3c;
+            --sorted-color: #27ae60;
+            --background-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --header-color: #ecf0f1;
+            --card-bg-color: #34495e;
+            --shadow-color: rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--header-color);
+        }
+
+        h1, h2 {
+            font-weight: 300;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--header-color);
+            border-bottom: 2px solid var(--bar-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .visualization-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        #bar-container {
+            display: flex;
+            align-items: flex-end;
+            height: 250px;
+            width: 100%;
+            border-bottom: 2px solid #bdc3c7;
+        }
+
+        .bar {
+            flex-grow: 1;
+            background-color: var(--bar-color);
+            margin: 0 2px;
+            transition: height 0.3s ease, background-color 0.3s ease;
+            position: relative;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text-color);
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--header-color);
+            color: var(--background-color);
+            border: 1px solid var(--bar-color);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        body.dark-mode button {
+             background-color: var(--card-bg-color);
+             color: var(--text-color);
+        }
+
+
+        button:hover:not(:disabled) {
+            opacity: 0.8;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            background-color: var(--card-bg-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .input-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .input-controls input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            min-width: 200px;
+        }
+
+        .input-controls label {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home">← 回首頁</a>
+    <div class="container">
+        <header>
+            <h1>插入排序法 (Insertion Sort) 視覺化工具</h1>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>視覺化展示</h2>
+                <div class="visualization-area">
+                    <div id="bar-container"></div>
+                    <div class="controls">
+                        <button id="play-pause-btn">自動播放</button>
+                        <button id="next-step-btn">下一步 &rarr;</button>
+                        <button id="reset-btn">重設陣列</button>
+                    </div>
+                    <div class="input-controls">
+                        <div>
+                            <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
+                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
+                        </div>
+                        <div>
+                            <label for="speed-slider">速度:</label>
+                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
+                            <span id="speed-value">200ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>操作原理</h2>
+                <p>插入排序法是一種直觀的排序演算法，它的工作方式是將數列分為「已排序」和「未排序」兩部分。演算法每次從「未排序」部分取出第一個元素，然後在「已排序」部分中找到合適的位置插入它。</p>
+                <p>這個過程就像我們在玩撲克牌時，將抽到的新牌一張張插入手中已排好序的牌列中一樣。</p>
+            </div>
+
+            <div class="card">
+                <h2>操作過程</h2>
+                <ol>
+                    <li>假設數列的第一個元素已經是「已排序」部分。</li>
+                    <li>從第二個元素開始（作為第一張要插入的牌），將它與前面「已排序」部分的元素從後向前逐一比較。</li>
+                    <li>如果已排序的元素大於新元素（這張牌），則將該元素向後移動一個位置。</li>
+                    <li>重複上一步，直到找到一個小於或等於新元素的位置，或已到達數列的開頭。</li>
+                    <li>將新元素插入到這個找到的空位。</li>
+                    <li>重複步驟2-5，直到所有「未排序」的元素都被插入到「已排序」部分中，整個數列排序完成。</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>複雜度分析</h2>
+                <ul>
+                    <li><strong>最差時間複雜度 (Worst Case):</strong> <code>O(n²)</code><br>當數列完全是反向排序時，每個元素都需要和前面所有已排序的元素進行比較和移動。</li>
+                    <li><strong>最佳時間複雜度 (Best Case):</strong> <code>O(n)</code><br>當數列已經是排序好的狀態時，每個元素只需要和它前面的元素比較一次，不需要移動。</li>
+                    <li><strong>平均時間複雜度 (Average Case):</strong> <code>O(n²)</code><br>在隨機排列的數列中，平均每個元素需要比較和移動其前面一半的元素。</li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>插入排序法也是一種原地(in-place)演算法，只需要一個額外的臨時變數來儲存正在被插入的元素。</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <div id="theme-toggle" title="切換主題">
+        <span id="theme-icon">🌙</span>
+    </div>
+
+    <script>
+        const barContainer = document.getElementById('bar-container');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const customInput = document.getElementById('custom-input');
+        const startCustomSortBtn = document.getElementById('start-custom-sort-btn');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+
+        let array = [];
+        const ARRAY_SIZE = 15;
+        let DELAY_MS = 200;
+
+        // Sorting state
+        let i = 1; // Outer loop counter
+        let j = 0; // Inner loop counter
+        let key = 0;
+        let phase = 'compare'; // 'compare' or 'shift'
+        let isSorting = false;
+        let isPaused = true;
+        let sortingInterval = null;
+
+        // Generate a new random array and render it
+        const resetArray = (customArray = null) => {
+            clearInterval(sortingInterval);
+            if (customArray) {
+                array = customArray;
+            } else {
+                array = [];
+                for (let k = 0; k < ARRAY_SIZE; k++) {
+                    array.push(Math.floor(Math.random() * 90) + 10);
+                }
+            }
+            
+            i = 1;
+            j = 0;
+            key = 0;
+            phase = 'compare';
+            isSorting = false;
+            isPaused = true;
+
+            renderBars();
+            updateButtons();
+        };
+
+        // Render the bars based on the current array state
+        const renderBars = (compareIdx = -1, keyIdx = -1) => {
+            barContainer.innerHTML = '';
+            array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${value}%`;
+
+                if (index < i) {
+                     bar.style.backgroundColor = 'var(--sorted-color)';
+                }
+                if (index === keyIdx) {
+                    bar.style.backgroundColor = 'var(--swap-color)'; // The element being inserted
+                } else if (index === compareIdx) {
+                    bar.style.backgroundColor = 'var(--compare-color)'; // Element being compared against
+                }
+                
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+        
+        const updateButtons = () => {
+            playPauseBtn.innerText = isPaused ? "自動播放" : "暫停";
+
+            if (isSorting) {
+                resetBtn.disabled = true;
+                startCustomSortBtn.disabled = true;
+                playPauseBtn.disabled = false;
+                nextStepBtn.disabled = !isPaused;
+            } else { // Not sorting (either before start or after finish)
+                resetBtn.disabled = false;
+                startCustomSortBtn.disabled = false;
+                playPauseBtn.disabled = false;
+                nextStepBtn.disabled = false;
+                if (i >= array.length && array.length > 0) {
+                    playPauseBtn.disabled = true;
+                    nextStepBtn.disabled = true;
+                }
+            }
+        };
+
+        const nextStep = () => {
+            if (!isSorting) {
+                isSorting = true;
+                i = 1;
+                key = array[i];
+                j = i - 1;
+            }
+
+            if (i >= array.length) {
+                isSorting = false;
+                isPaused = true;
+                clearInterval(sortingInterval);
+                renderBars();
+                updateButtons();
+                return;
+            }
+
+            renderBars(j, i);
+
+            if (phase === 'compare') {
+                if (j >= 0 && array[j] > key) {
+                    phase = 'shift';
+                } else {
+                    // Found correct position, insert key
+                    array[j + 1] = key;
+                    i++;
+                    if (i < array.length) {
+                        key = array[i];
+                        j = i - 1;
+                    }
+                    phase = 'compare';
+                }
+            } else { // phase === 'shift'
+                array[j + 1] = array[j];
+                j--;
+                phase = 'compare';
+            }
+            
+            // Re-render after potential change
+            renderBars(j, (phase === 'shift' || j<0) ? j+1 : i);
+            
+            updateButtons();
+        };
+
+        const playPause = () => {
+            if (isPaused) {
+                isPaused = false;
+                if (i >= array.length) {
+                    isPaused = true;
+                    return;
+                }
+                if (!isSorting) {
+                    isSorting = true;
+                    i = 1;
+                    key = array[i];
+                    j = i - 1;
+                }
+                sortingInterval = setInterval(nextStep, DELAY_MS);
+            } else {
+                isPaused = true;
+                clearInterval(sortingInterval);
+            }
+            updateButtons();
+        };
+        
+        const startCustomSort = () => {
+            const input = customInput.value;
+            if (input.trim() === '') {
+                alert('請輸入數字！');
+                return;
+            }
+            const customArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0 && n <= 100);
+
+            if (customArray.length === 0) {
+                alert('請輸入有效的數字 (1-100)，並用逗號分隔。');
+                return;
+            }
+            resetArray(customArray);
+        }
+
+        // Event listeners
+        playPauseBtn.addEventListener('click', playPause);
+        nextStepBtn.addEventListener('click', () => {
+            if (isPaused) {
+                nextStep();
+            }
+        });
+        resetBtn.addEventListener('click', () => resetArray());
+        startCustomSortBtn.addEventListener('click', startCustomSort);
+        speedSlider.addEventListener('input', (e) => {
+            DELAY_MS = parseInt(e.target.value);
+            speedValue.innerText = `${DELAY_MS}ms`;
+            if (!isPaused) {
+                clearInterval(sortingInterval);
+                sortingInterval = setInterval(nextStep, DELAY_MS);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            resetArray();
+            
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const currentTheme = localStorage.getItem('theme');
+
+            if (currentTheme) {
+                document.body.classList.add(currentTheme);
+                if (currentTheme === 'dark-mode') {
+                    themeIcon.innerText = '☀️';
+                }
+            }
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                let theme = '';
+                if (document.body.classList.contains('dark-mode')) {
+                    themeIcon.innerText = '☀️';
+                    theme = 'dark-mode';
+                } else {
+                    themeIcon.innerText = '🌙';
+                }
+                localStorage.setItem('theme', theme);
+            });
+        });
+
+    </script>
+
+</body>
+</html>
