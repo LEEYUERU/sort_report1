@@ -222,6 +222,17 @@
         .input-controls label {
             margin-left: 10px;
         }
+
+        .pseudocode {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -241,16 +252,12 @@
                         <button id="next-step-btn">下一步 &rarr;</button>
                         <button id="reset-btn">重設陣列</button>
                     </div>
-                    <div class="input-controls">
-                        <div>
-                            <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
-                        </div>
-                        <div>
-                            <label for="speed-slider">速度:</label>
-                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
-                            <span id="speed-value">200ms</span>
-                        </div>
+                    <div class="pseudocode">
+                        Pseudocode:
+                        1. Repeat until no swaps are needed:
+                        2.   Iterate through the array.
+                        3.   Compare adjacent elements.
+                        4.   Swap them if they are in the wrong order.
                     </div>
                 </div>
             </div>

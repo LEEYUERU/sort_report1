@@ -218,6 +218,17 @@
             background-color: var(--bar-color);
             transition: height 0.3s, background-color 0.3s;
         }
+
+        .pseudocode {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -234,8 +245,19 @@
                     <div id="bar-container"></div>
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
+                        <button id="next-step-btn">下一步</button>
                         <button id="reset-btn">重設陣列</button>
                     </div>
+                    <div class="input-controls">
+                        <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
+                        <button id="start-custom-sort-btn">開始排序自訂數字</button>
+                    </div>
+                </div>
+                <div class="pseudocode">
+                    Pseudocode:
+                    1. Initialize count array to store frequency of each element.
+                    2. Count occurrences of each element in the input array.
+                    3. Reconstruct the sorted array using the count array.
                 </div>
             </div>
 
@@ -275,9 +297,15 @@
     <script>
         const barContainer = document.getElementById('bar-container');
         const startSortBtn = document.getElementById('start-sort-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
         const resetBtn = document.getElementById('reset-btn');
+        const customInput = document.getElementById('custom-input');
+        const startCustomSortBtn = document.getElementById('start-custom-sort-btn');
 
         let data = [5, 3, 8, 6, 2, 7, 4, 1];
+        let counts = [];
+        let stepIndex = 0;
+        let sortedIndex = 0;
 
         const renderBars = (highlightIndices = []) => {
             barContainer.innerHTML = '';
@@ -299,40 +327,62 @@
             });
         };
 
-        const countingSort = async () => {
-            const counts = new Array(Math.max(...data) + 1).fill(0);
-
-            // Count occurrences
-            for (let i = 0; i < data.length; i++) {
-                counts[data[i]]++;
-                renderBars([i]);
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-
-            // Reconstruct sorted array
-            let index = 0;
-            for (let i = 0; i < counts.length; i++) {
-                while (counts[i] > 0) {
-                    data[index] = i;
-                    renderBars([index]);
-                    index++;
-                    counts[i]--;
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-            }
-
-            renderBars();
-        };
-
         const resetArray = () => {
             data = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10) + 1);
+            counts = new Array(Math.max(...data) + 1).fill(0);
+            stepIndex = 0;
+            sortedIndex = 0;
             renderBars();
         };
 
-        startSortBtn.addEventListener('click', countingSort);
-        resetBtn.addEventListener('click', resetArray);
+        const countingSortStep = () => {
+            if (stepIndex < data.length) {
+                counts[data[stepIndex]]++;
+                renderBars([stepIndex]);
+                stepIndex++;
+            } else if (sortedIndex < data.length) {
+                for (let i = 0; i < counts.length; i++) {
+                    while (counts[i] > 0) {
+                        data[sortedIndex] = i;
+                        renderBars([sortedIndex]);
+                        sortedIndex++;
+                        counts[i]--;
+                        return;
+                    }
+                }
+            }
+        };
 
-        renderBars();
+        const startCustomSort = () => {
+            const input = customInput.value;
+            if (input.trim() === '') {
+                alert('請輸入數字！');
+                return;
+            }
+            const customArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
+            if (customArray.length === 0) {
+                alert('請輸入有效的數字！');
+                return;
+            }
+            data = customArray;
+            counts = new Array(Math.max(...data) + 1).fill(0);
+            stepIndex = 0;
+            sortedIndex = 0;
+            renderBars();
+        };
+
+        startSortBtn.addEventListener('click', async () => {
+            while (stepIndex < data.length || sortedIndex < data.length) {
+                countingSortStep();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        });
+
+        nextStepBtn.addEventListener('click', countingSortStep);
+        resetBtn.addEventListener('click', resetArray);
+        startCustomSortBtn.addEventListener('click', startCustomSort);
+
+        resetArray();
     </script>
 
 </body>

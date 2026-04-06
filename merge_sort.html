@@ -218,6 +218,17 @@
             background-color: var(--bar-color);
             transition: height 0.3s, background-color 0.3s;
         }
+
+        .pseudocode {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -234,6 +245,7 @@
                     <div id="bar-container"></div>
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
+                        <button id="next-step-btn">下一步</button>
                         <button id="reset-btn">重設陣列</button>
                     </div>
                     <div class="input-controls">
@@ -247,6 +259,12 @@
                             <span id="speed-value">200ms</span>
                         </div>
                     </div>
+                </div>
+                <div class="pseudocode">
+                    Pseudocode:
+                    1. Divide the array into two halves.
+                    2. Recursively sort each half.
+                    3. Merge the two sorted halves into a single sorted array.
                 </div>
             </div>
 
@@ -282,9 +300,12 @@
     <script>
         const barContainer = document.getElementById('bar-container');
         const startSortBtn = document.getElementById('start-sort-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
         const resetBtn = document.getElementById('reset-btn');
 
         let data = [38, 27, 43, 3, 9, 82, 10];
+        let steps = [];
+        let currentStep = 0;
 
         const renderBars = (highlightIndices = []) => {
             barContainer.innerHTML = '';
@@ -306,22 +327,21 @@
             });
         };
 
-        const mergeSort = async (arr, start, end) => {
+        const mergeSort = (arr, start, end) => {
             if (start >= end) return;
 
             const mid = Math.floor((start + end) / 2);
-            await mergeSort(arr, start, mid);
-            await mergeSort(arr, mid + 1, end);
-            await merge(arr, start, mid, end);
+            mergeSort(arr, start, mid);
+            mergeSort(arr, mid + 1, end);
+            merge(arr, start, mid, end);
         };
 
-        const merge = async (arr, start, mid, end) => {
+        const merge = (arr, start, mid, end) => {
             const temp = [];
             let i = start, j = mid + 1;
 
             while (i <= mid && j <= end) {
-                renderBars([i, j]);
-                await new Promise(resolve => setTimeout(resolve, 500));
+                steps.push({ type: 'compare', indices: [i, j] });
 
                 if (arr[i] <= arr[j]) {
                     temp.push(arr[i]);
@@ -337,25 +357,47 @@
 
             for (let k = 0; k < temp.length; k++) {
                 arr[start + k] = temp[k];
-                renderBars([start + k]);
-                await new Promise(resolve => setTimeout(resolve, 500));
+                steps.push({ type: 'overwrite', index: start + k, value: temp[k] });
             }
+        };
+
+        const prepareSteps = () => {
+            steps = [];
+            mergeSort([...data], 0, data.length - 1);
+            currentStep = 0;
+        };
+
+        const executeStep = () => {
+            if (currentStep >= steps.length) return;
+
+            const step = steps[currentStep];
+            if (step.type === 'compare') {
+                renderBars(step.indices);
+            } else if (step.type === 'overwrite') {
+                data[step.index] = step.value;
+                renderBars([step.index]);
+            }
+
+            currentStep++;
         };
 
         const resetArray = () => {
             data = Array.from({ length: 8 }, () => Math.floor(Math.random() * 100) + 1);
+            prepareSteps();
             renderBars();
         };
 
-        const startMergeSort = async () => {
-            await mergeSort(data, 0, data.length - 1);
-            renderBars();
-        };
+        startSortBtn.addEventListener('click', async () => {
+            while (currentStep < steps.length) {
+                executeStep();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        });
 
-        startSortBtn.addEventListener('click', startMergeSort);
+        nextStepBtn.addEventListener('click', executeStep);
         resetBtn.addEventListener('click', resetArray);
 
-        renderBars();
+        resetArray();
     </script>
 
 </body>

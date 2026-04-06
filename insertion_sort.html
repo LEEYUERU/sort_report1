@@ -222,6 +222,17 @@
         .input-controls label {
             margin-left: 10px;
         }
+
+        .pseudocode {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -237,20 +248,15 @@
                 <div class="visualization-area">
                     <div id="bar-container"></div>
                     <div class="controls">
-                        <button id="play-pause-btn">自動播放</button>
-                        <button id="next-step-btn">下一步 &rarr;</button>
+                        <button id="start-sort-btn">開始排序</button>
+                        <button id="next-step-btn">下一步</button>
                         <button id="reset-btn">重設陣列</button>
                     </div>
-                    <div class="input-controls">
-                        <div>
-                            <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
-                        </div>
-                        <div>
-                            <label for="speed-slider">速度:</label>
-                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
-                            <span id="speed-value">200ms</span>
-                        </div>
+                    <div class="pseudocode">
+                        Pseudocode:
+                        1. Iterate from the second element to the end of the array.
+                        2. For each element, compare it with elements before it.
+                        3. Insert it into its correct position in the sorted portion.
                     </div>
                 </div>
             </div>
@@ -291,7 +297,7 @@
 
     <script>
         const barContainer = document.getElementById('bar-container');
-        const playPauseBtn = document.getElementById('play-pause-btn');
+        const startSortBtn = document.getElementById('start-sort-btn');
         const nextStepBtn = document.getElementById('next-step-btn');
         const resetBtn = document.getElementById('reset-btn');
         const customInput = document.getElementById('custom-input');
