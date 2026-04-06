@@ -254,20 +254,7 @@
                 <div class="visualization-area">
                     <div id="bar-container"></div>
                     <div class="controls">
-                        <button id="play-pause-btn">自動播放</button>
-                        <button id="next-step-btn">下一步 &rarr;</button>
-                        <button id="reset-btn">重設陣列</button>
-                    </div>
-                    <div class="input-controls">
-                        <div>
-                            <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
-                        </div>
-                        <div>
-                            <label for="speed-slider">速度:</label>
-                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
-                            <span id="speed-value">200ms</span>
-                        </div>
+                        <button id="start-sort-btn">開始排序</button>
                     </div>
                 </div>
             </div>
@@ -306,7 +293,59 @@
     </div>
 
     <script>
-        // 開發中：計數排序法的視覺化腳本將在此處實現
+        const barContainer = document.getElementById('bar-container');
+        const startSortBtn = document.getElementById('start-sort-btn');
+
+        const data = [5, 3, 8, 6, 2, 7, 4, 1];
+
+        const renderBars = (highlightIndices = []) => {
+            barContainer.innerHTML = '';
+            data.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${value * 30}px`;
+
+                if (highlightIndices.includes(index)) {
+                    bar.style.backgroundColor = 'var(--compare-color)';
+                }
+
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+
+        const countingSort = async () => {
+            const counts = new Array(Math.max(...data) + 1).fill(0);
+
+            // Count occurrences
+            for (let i = 0; i < data.length; i++) {
+                counts[data[i]]++;
+                renderBars([i]);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Reconstruct sorted array
+            let index = 0;
+            for (let i = 0; i < counts.length; i++) {
+                while (counts[i] > 0) {
+                    data[index] = i;
+                    renderBars([index]);
+                    index++;
+                    counts[i]--;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            renderBars();
+        };
+
+        startSortBtn.addEventListener('click', countingSort);
+
+        renderBars();
     </script>
 
 </body>

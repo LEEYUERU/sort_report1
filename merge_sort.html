@@ -254,9 +254,7 @@
                 <div class="visualization-area">
                     <div id="bar-container"></div>
                     <div class="controls">
-                        <button id="play-pause-btn">自動播放</button>
-                        <button id="next-step-btn">下一步 &rarr;</button>
-                        <button id="reset-btn">重設陣列</button>
+                        <button id="start-sort-btn">開始排序</button>
                     </div>
                     <div class="input-controls">
                         <div>
@@ -302,7 +300,75 @@
     </div>
 
     <script>
-        // 開發中：合併排序法的視覺化腳本將在此處實現
+        const barContainer = document.getElementById('bar-container');
+        const startSortBtn = document.getElementById('start-sort-btn');
+
+        const data = [38, 27, 43, 3, 9, 82, 10];
+
+        const renderBars = (highlightIndices = []) => {
+            barContainer.innerHTML = '';
+            data.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${value * 3}px`;
+
+                if (highlightIndices.includes(index)) {
+                    bar.style.backgroundColor = 'var(--compare-color)';
+                }
+
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+
+        const mergeSort = async (arr, start, end) => {
+            if (start >= end) return;
+
+            const mid = Math.floor((start + end) / 2);
+            await mergeSort(arr, start, mid);
+            await mergeSort(arr, mid + 1, end);
+            await merge(arr, start, mid, end);
+        };
+
+        const merge = async (arr, start, mid, end) => {
+            const temp = [];
+            let i = start, j = mid + 1;
+
+            while (i <= mid && j <= end) {
+                renderBars([i, j]);
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                if (arr[i] <= arr[j]) {
+                    temp.push(arr[i]);
+                    i++;
+                } else {
+                    temp.push(arr[j]);
+                    j++;
+                }
+            }
+
+            while (i <= mid) temp.push(arr[i++]);
+            while (j <= end) temp.push(arr[j++]);
+
+            for (let k = 0; k < temp.length; k++) {
+                arr[start + k] = temp[k];
+                renderBars([start + k]);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        };
+
+        const startMergeSort = async () => {
+            await mergeSort(data, 0, data.length - 1);
+            renderBars();
+        };
+
+        startSortBtn.addEventListener('click', startMergeSort);
+
+        renderBars();
     </script>
 
 </body>
