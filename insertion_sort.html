@@ -82,6 +82,7 @@
             width: 100%;
             border-bottom: 2px solid #bdc3c7;
             gap: 4px;
+            margin-bottom: 30px; /* 修正：增加底部邊距，留出空間給數字標籤 */
         }
 
         .bar {
@@ -105,8 +106,10 @@
         .legend {
             display: flex;
             gap: 15px;
-            margin-top: 15px;
+            margin-top: 10px;
             font-size: 0.9rem;
+            flex-wrap: wrap; /* 修正：讓圖例在空間不足時自動換行 */
+            justify-content: center;
         }
 
         .legend-item {
@@ -251,7 +254,7 @@
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
                         <button id="next-step-btn">下一步</button>
-                        <button id="reset-btn">重設陣列</button>
+                        <button id="reset-btn">隨機產生</button>
                     </div>
                     <div class="input-controls">
                         <div class="input-row">
@@ -309,7 +312,7 @@
         const speedSlider = document.getElementById('speed-slider');
         const speedValue = document.getElementById('speed-value');
 
-        let data = [38, 27, 43, 3, 9, 82, 10];
+        let data = [];
         let steps = [];
         let currentStep = 0;
         let isSorting = false;
@@ -422,7 +425,7 @@
 
         const resetArray = () => {
             isSorting = false;
-            data = Array.from({ length: 10 }, () => Math.floor(Math.random() * 100) + 1);
+            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 99) + 1);
             prepareSteps();
             renderBars();
             setButtonsState(false);
