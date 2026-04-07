@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插入排序法 (Insertion Sort) 視覺化工具</title>
+    <style>
+        :root {
+            --bar-color: #3498db;
+            --compare-color: #e74c3c; /* 比較時的顏色 */
+            --active-color: #9b59b6;  /* 當前準備插入的元素顏色 (紫色) */
+            --sorted-color: #2ecc71;  /* 已排序區域的顏色 */
+            --background-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --header-color: #34495e;
+            --card-bg-color: #ffffff;
+            --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--header-color);
+        }
+
+        h1, h2 {
+            font-weight: 300;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--header-color);
+            border-bottom: 2px solid var(--bar-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .visualization-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        #bar-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 250px;
+            width: 100%;
+            border-bottom: 2px solid #bdc3c7;
+            gap: 4px;
+        }
+
+        .bar {
+            width: 30px;
+            background-color: var(--bar-color);
+            transition: height 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+            position: relative;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--header-color);
+            color: var(--background-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 5px 10px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        ul, ol {
+            padding-left: 20px;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            background-color: var(--card-bg-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .input-controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            width: 100%;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-controls input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            min-width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home">← 回首頁</a>
+    <div class="container">
+        <header>
+            <h1>插入排序法 (Insertion Sort) 視覺化工具</h1>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>視覺化展示</h2>
+                <div class="visualization-area">
+                    <div id="bar-container"></div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 已排序區域</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--active-color);"></div> 當前插入元素</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--compare-color);"></div> 比較 / 位移中</div>
+                    </div>
+                    <div class="controls">
+                        <button id="start-sort-btn">開始排序</button>
+                        <button id="next-step-btn">下一步</button>
+                        <button id="reset-btn">重設陣列</button>
+                    </div>
+                    <div class="input-controls">
+                        <div class="input-row">
+                            <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
+                            <button id="start-custom-sort-btn">套用自訂數字</button>
+                        </div>
+                        <div class="input-row">
+                            <label for="speed-slider">播放速度:</label>
+                            <input type="range" id="speed-slider" min="50" max="1000" value="300" style="direction: rtl;">
+                            <span id="speed-value">300ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>操作原理</h2>
+                <p>插入排序法的工作原理與我們「打撲克牌時整理手牌」的方式非常相似。它會將陣列分為「已排序」與「未排序」兩個部分。初始狀態下，第一個元素被視為已排序。</p>
+                <p>接著，演算法會逐一從未排序部分取出元素，將其與已排序部分的元素由後往前進行比較，找到合適的位置並插入，直到所有元素都排序完畢。</p>
+            </div>
+
+            <div class="card">
+                <h2>操作過程</h2>
+                <ol>
+                    <li><strong>初始狀態：</strong> 假設陣列的第一個元素已經排好序。</li>
+                    <li><strong>選取元素：</strong> 取出下一個未排序的元素（稱為 <code>key</code>）。</li>
+                    <li><strong>向前比較與位移：</strong> 在已經排序的元素序列中，從後向前掃描。如果掃描到的已排序元素大於 <code>key</code>，就將該元素往後移一個位置，騰出空間。</li>
+                    <li><strong>插入元素：</strong> 重複步驟 3，直到找到一個小於或等於 <code>key</code> 的元素，並將 <code>key</code> 插入到該位置的後方。</li>
+                    <li><strong>重複：</strong> 重複步驟 2 到 4，直到整個陣列排序完成。</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>複雜度分析</h2>
+                <ul>
+                    <li><strong>時間複雜度 (最佳情況):</strong> <code>O(n)</code><br>當陣列已經是排序好的狀態時，每次比較只需進行一次，不需要移動元素，效率極高。</li>
+                    <li><strong>時間複雜度 (平均/最壞情況):</strong> <code>O(n<sup>2</sup>)</code><br>當陣列是反序時，每個新取出的元素都需要與前面所有已排序的元素進行比較並移動，耗費較多時間。</li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>插入排序也是一種「原地排序 (In-place Sort)」，只需要一個變數 <code>key</code> 來暫存當前元素，不需額外配置大記憶體空間。</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <div id="theme-toggle" title="切換主題">
+        <span id="theme-icon">🌙</span>
+    </div>
+
+    <script>
+        const barContainer = document.getElementById('bar-container');
+        const startSortBtn = document.getElementById('start-sort-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const customInput = document.getElementById('custom-input');
+        const startCustomSortBtn = document.getElementById('start-custom-sort-btn');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+
+        let data = [38, 27, 43, 3, 9, 82, 10];
+        let steps = [];
+        let currentStep = 0;
+        let isSorting = false;
+
+        // 渲染狀態變數
+        let sortedUpTo = -1;
+        let selectedIndex = -1;
+        let compareIndices = [];
+
+        speedSlider.addEventListener('input', (e) => {
+            speedValue.innerText = `${e.target.value}ms`;
+        });
+
+        const renderBars = () => {
+            barContainer.innerHTML = '';
+            const maxVal = Math.max(...data, 1); 
+
+            data.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${(value / maxVal) * 200 + 20}px`; 
+
+                // 顏色優先級：當前選擇元素 > 比較中/位移元素 > 已排序元素
+                if (index === selectedIndex) {
+                    bar.style.backgroundColor = 'var(--active-color)';
+                } else if (compareIndices.includes(index)) {
+                    bar.style.backgroundColor = 'var(--compare-color)';
+                } else if (index <= sortedUpTo) {
+                    bar.style.backgroundColor = 'var(--sorted-color)';
+                }
+
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+
+        const insertionSort = (arr) => {
+            const tempArr = [...arr];
+            const n = tempArr.length;
+            
+            steps.push({ type: 'sorted', index: 0 });
+
+            for (let i = 1; i < n; i++) {
+                let key = tempArr[i];
+                steps.push({ type: 'select', index: i }); // 選取要插入的元素
+
+                let j = i - 1;
+                
+                // 開始往前比較
+                while (j >= 0) {
+                    steps.push({ type: 'compare', indices: [j, j + 1] });
+                    if (tempArr[j] > key) {
+                        tempArr[j + 1] = tempArr[j]; // 元素往後位移
+                        steps.push({ type: 'shift', index: j + 1, value: tempArr[j] });
+                        j--;
+                    } else {
+                        break;
+                    }
+                }
+                tempArr[j + 1] = key; // 找到正確位置插入
+                steps.push({ type: 'insert', index: j + 1, value: key });
+                steps.push({ type: 'sorted', index: i }); // 標記至 i 為止為已排序
+            }
+        };
+
+        const prepareSteps = () => {
+            steps = [];
+            insertionSort([...data]);
+            currentStep = 0;
+            sortedUpTo = 0; // 插入排序預設第一個元素已排序
+            selectedIndex = -1;
+            compareIndices = [];
+        };
+
+        const executeStep = () => {
+            if (currentStep >= steps.length) {
+                sortedUpTo = data.length - 1; // 全部標示為已排序
+                selectedIndex = -1;
+                compareIndices = [];
+                renderBars();
+                setButtonsState(false);
+                return;
+            }
+
+            const step = steps[currentStep];
+            compareIndices = [];
+            selectedIndex = -1;
+
+            if (step.type === 'sorted') {
+                sortedUpTo = step.index;
+            } else if (step.type === 'select') {
+                selectedIndex = step.index;
+            } else if (step.type === 'compare') {
+                compareIndices = step.indices;
+            } else if (step.type === 'shift') {
+                data[step.index] = step.value;
+                compareIndices = [step.index]; // 強調被位移的位置
+            } else if (step.type === 'insert') {
+                data[step.index] = step.value;
+                selectedIndex = step.index; // 強調插入的位置
+            }
+
+            renderBars();
+            currentStep++;
+        };
+
+        const resetArray = () => {
+            isSorting = false;
+            data = Array.from({ length: 10 }, () => Math.floor(Math.random() * 100) + 1);
+            prepareSteps();
+            renderBars();
+            setButtonsState(false);
+        };
+
+        const setButtonsState = (disabled) => {
+            startSortBtn.disabled = disabled;
+            nextStepBtn.disabled = disabled;
+            startCustomSortBtn.disabled = disabled;
+        };
+
+        startSortBtn.addEventListener('click', async () => {
+            if (currentStep >= steps.length) prepareSteps();
+            isSorting = true;
+            setButtonsState(true);
+            resetBtn.disabled = true;
+
+            while (currentStep < steps.length && isSorting) {
+                executeStep();
+                let delay = parseInt(speedSlider.value);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            
+            resetBtn.disabled = false;
+        });
+
+        nextStepBtn.addEventListener('click', executeStep);
+        
+        resetBtn.addEventListener('click', resetArray);
+
+        startCustomSortBtn.addEventListener('click', () => {
+            const inputVal = customInput.value;
+            const arr = inputVal.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+            
+            if (arr.length > 0 && arr.length <= 20) {
+                data = arr;
+                prepareSteps();
+                renderBars();
+                setButtonsState(false);
+            } else {
+                alert('請輸入有效的數字格式，並以半形逗號分隔 (建議最多 20 個數字)。');
+            }
+        });
+
+        // 暗黑模式切換
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        let isDarkMode = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--background-color', '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', '#e6e6e6');
+                document.documentElement.style.setProperty('--card-bg-color', '#16213e');
+                document.documentElement.style.setProperty('--header-color', '#4ea8de');
+                themeIcon.innerText = '☀️';
+            } else {
+                document.documentElement.style.setProperty('--background-color', '#ecf0f1');
+                document.documentElement.style.setProperty('--text-color', '#2c3e50');
+                document.documentElement.style.setProperty('--card-bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--header-color', '#34495e');
+                themeIcon.innerText = '🌙';
+            }
+        });
+
+        // 初始化
+        resetArray();
+    </script>
+</body>
+</html>
