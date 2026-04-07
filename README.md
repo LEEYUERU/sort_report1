@@ -2,7 +2,7 @@
 
 **學號:** 11428201
 **姓名:** 李約儒
-**模擬頁面:** [https://github.com/LEEYUERU/sort_report1.git]
+**模擬頁面:** https://github.com/LEEYUERU/sort_report1.git
 
 本報告旨在探討與比較五種經典的排序演算法，並透過前端網頁技術（HTML, CSS, JavaScript）實作視覺化模擬工具，幫助直觀理解各演算法的運作邏輯與執行過程。以下為各演算法的詳細介紹、複雜度分析與模擬實作內容。
 
