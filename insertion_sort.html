@@ -55,6 +55,19 @@
             border-bottom: 2px solid var(--bar-color);
             padding-bottom: 10px;
             margin-top: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 標題旁的小藍色裝飾條 */
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--bar-color);
+            margin-right: 10px;
+            border-radius: 3px;
         }
         
         .card {
@@ -82,7 +95,7 @@
             width: 100%;
             border-bottom: 2px solid #bdc3c7;
             gap: 4px;
-            margin-bottom: 30px; /* 修正：增加底部邊距，留出空間給數字標籤 */
+            margin-bottom: 30px; 
         }
 
         .bar {
@@ -108,7 +121,7 @@
             gap: 15px;
             margin-top: 10px;
             font-size: 0.9rem;
-            flex-wrap: wrap; /* 修正：讓圖例在空間不足時自動換行 */
+            flex-wrap: wrap;
             justify-content: center;
         }
 
@@ -151,16 +164,49 @@
             opacity: 0.5;
         }
 
-        code {
-            background-color: rgba(0,0,0,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        
         ul, ol {
             padding-left: 20px;
         }
+
+        /* 偽代碼區塊樣式 */
+        .code-container {
+            background-color: #111827;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #e5e7eb;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .code-line {
+            display: flex;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            white-space: pre;
+        }
+
+        .code-line.active {
+            background-color: rgba(52, 152, 219, 0.4);
+            border-left: 3px solid #3498db;
+        }
+
+        .line-num {
+            color: #6b7280;
+            width: 30px;
+            flex-shrink: 0;
+            text-align: right;
+            margin-right: 15px;
+            user-select: none;
+        }
+
+        /* 語法高亮顏色 */
+        .kw { color: #c678dd; } 
+        .fn { color: #61afef; } 
+        .cm { color: #6b7280; font-style: italic; } 
 
         #theme-toggle {
             position: fixed;
@@ -248,7 +294,7 @@
                     <div id="bar-container"></div>
                     <div class="legend">
                         <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 已排序區域</div>
-                        <div class="legend-item"><div class="color-box" style="background-color: var(--active-color);"></div> 當前插入元素</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--active-color);"></div> 當前插入元素 (Key)</div>
                         <div class="legend-item"><div class="color-box" style="background-color: var(--compare-color);"></div> 比較 / 位移中</div>
                     </div>
                     <div class="controls">
@@ -267,6 +313,22 @@
                             <span id="speed-value">300ms</span>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 新增的偽代碼區塊 -->
+            <div class="card">
+                <h2>演算法偽代碼</h2>
+                <div class="code-container" id="pseudocode">
+                    <div class="code-line" id="line-0"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">insertionSort</span>(arr):</div>
+                    <div class="code-line" id="line-1"><span class="line-num">1</span>  n = arr.length</div>
+                    <div class="code-line" id="line-2"><span class="line-num">2</span>  <span class="kw">for</span> i = 1 <span class="kw">to</span> n-1:</div>
+                    <div class="code-line" id="line-3"><span class="line-num">3</span>    key = arr[i] <span class="cm">// 取出準備要插入的牌</span></div>
+                    <div class="code-line" id="line-4"><span class="line-num">4</span>    j = i - 1</div>
+                    <div class="code-line" id="line-5"><span class="line-num">5</span>    <span class="kw">while</span> j >= 0 <span class="kw">and</span> arr[j] > key: <span class="cm">// 往前尋找比對</span></div>
+                    <div class="code-line" id="line-6"><span class="line-num">6</span>      arr[j+1] = arr[j] <span class="cm">// 將較大的元素往後移</span></div>
+                    <div class="code-line" id="line-7"><span class="line-num">7</span>      j = j - 1</div>
+                    <div class="code-line" id="line-8"><span class="line-num">8</span>    arr[j+1] = key <span class="cm">// 找到位置，插入卡牌</span></div>
                 </div>
             </div>
 
@@ -335,7 +397,6 @@
                 bar.classList.add('bar');
                 bar.style.height = `${(value / maxVal) * 200 + 20}px`; 
 
-                // 顏色優先級：當前選擇元素 > 比較中/位移元素 > 已排序元素
                 if (index === selectedIndex) {
                     bar.style.backgroundColor = 'var(--active-color)';
                 } else if (compareIndices.includes(index)) {
@@ -353,32 +414,46 @@
             });
         };
 
+        // 處理偽代碼高亮邏輯
+        const highlightCodeLine = (lineNum) => {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+            if (lineNum !== null) {
+                const targetLine = document.getElementById(`line-${lineNum}`);
+                if (targetLine) targetLine.classList.add('active');
+            }
+        };
+
         const insertionSort = (arr) => {
             const tempArr = [...arr];
             const n = tempArr.length;
             
-            steps.push({ type: 'sorted', index: 0 });
+            steps.push({ type: 'sorted', index: 0, line: null });
 
             for (let i = 1; i < n; i++) {
                 let key = tempArr[i];
-                steps.push({ type: 'select', index: i }); // 選取要插入的元素
+                // 第3行: 取出 key
+                steps.push({ type: 'select', index: i, line: 3 }); 
 
                 let j = i - 1;
                 
                 // 開始往前比較
                 while (j >= 0) {
-                    steps.push({ type: 'compare', indices: [j, j + 1] });
+                    // 第5行: while 比較
+                    steps.push({ type: 'compare', indices: [j, j + 1], line: 5 }); 
+                    
                     if (tempArr[j] > key) {
                         tempArr[j + 1] = tempArr[j]; // 元素往後位移
-                        steps.push({ type: 'shift', index: j + 1, value: tempArr[j] });
+                        // 第6行: 位移
+                        steps.push({ type: 'shift', index: j + 1, value: tempArr[j], line: 6 }); 
                         j--;
                     } else {
                         break;
                     }
                 }
-                tempArr[j + 1] = key; // 找到正確位置插入
-                steps.push({ type: 'insert', index: j + 1, value: key });
-                steps.push({ type: 'sorted', index: i }); // 標記至 i 為止為已排序
+                tempArr[j + 1] = key; 
+                // 第8行: 插入卡牌
+                steps.push({ type: 'insert', index: j + 1, value: key, line: 8 }); 
+                steps.push({ type: 'sorted', index: i, line: null }); 
             }
         };
 
@@ -386,24 +461,30 @@
             steps = [];
             insertionSort([...data]);
             currentStep = 0;
-            sortedUpTo = 0; // 插入排序預設第一個元素已排序
+            sortedUpTo = 0; 
             selectedIndex = -1;
             compareIndices = [];
+            highlightCodeLine(null);
         };
 
         const executeStep = () => {
             if (currentStep >= steps.length) {
-                sortedUpTo = data.length - 1; // 全部標示為已排序
+                sortedUpTo = data.length - 1; 
                 selectedIndex = -1;
                 compareIndices = [];
                 renderBars();
                 setButtonsState(false);
+                highlightCodeLine(null);
                 return;
             }
 
             const step = steps[currentStep];
             compareIndices = [];
             selectedIndex = -1;
+
+            if (step.line !== undefined) {
+                highlightCodeLine(step.line);
+            }
 
             if (step.type === 'sorted') {
                 sortedUpTo = step.index;
@@ -413,10 +494,10 @@
                 compareIndices = step.indices;
             } else if (step.type === 'shift') {
                 data[step.index] = step.value;
-                compareIndices = [step.index]; // 強調被位移的位置
+                compareIndices = [step.index]; 
             } else if (step.type === 'insert') {
                 data[step.index] = step.value;
-                selectedIndex = step.index; // 強調插入的位置
+                selectedIndex = step.index; 
             }
 
             renderBars();
@@ -450,6 +531,7 @@
             }
             
             resetBtn.disabled = false;
+            highlightCodeLine(null);
         });
 
         nextStepBtn.addEventListener('click', executeStep);
@@ -470,7 +552,6 @@
             }
         });
 
-        // 暗黑模式切換
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         let isDarkMode = false;
@@ -492,7 +573,6 @@
             }
         });
 
-        // 初始化
         resetArray();
     </script>
 </body>
