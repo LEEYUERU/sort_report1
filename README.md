@@ -1,5 +1,5 @@
 # 排序演算法分析與視覺化實作報告
-
+---
 **學號:** 11428201 
 **姓名:** 李約儒
 **模擬頁面:** [https://github.com/LEEYUERU/sort_report1.git](https://leeyueru.github.io/sort_report1/)
