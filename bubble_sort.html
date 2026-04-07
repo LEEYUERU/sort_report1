@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>泡泡排序法 (Bubble Sort) 視覺化工具</title>
+    <title>氣泡排序法 (Bubble Sort) 視覺化工具</title>
     <style>
         :root {
             --bar-color: #3498db;
-            --compare-color: #f1c40f;
-            --swap-color: #e74c3c;
+            --compare-color: #e74c3c; /* 氣泡排序的比較顏色改為紅色比較醒目 */
             --sorted-color: #2ecc71;
             --background-color: #ecf0f1;
             --text-color: #2c3e50;
@@ -16,14 +15,6 @@
             --card-bg-color: #ffffff;
             --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             --shadow-color: rgba(0,0,0,0.1);
-        }
-
-        body.dark-mode {
-            --background-color: #2c3e50;
-            --text-color: #ecf0f1;
-            --header-color: #ecf0f1;
-            --card-bg-color: #34495e;
-            --shadow-color: rgba(0,0,0,0.3);
         }
 
         body {
@@ -85,30 +76,33 @@
         #bar-container {
             display: flex;
             align-items: flex-end;
+            justify-content: center;
             height: 250px;
             width: 100%;
             border-bottom: 2px solid #bdc3c7;
+            gap: 4px; /* 增加柱子間距 */
         }
 
         .bar {
-            flex-grow: 1;
+            width: 30px; /* 固定寬度 */
             background-color: var(--bar-color);
-            margin: 0 2px;
-            transition: height 0.3s ease, background-color 0.3s ease;
+            transition: height 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
             position: relative;
+            border-radius: 4px 4px 0 0;
         }
         
         .bar-label {
             position: absolute;
-            bottom: -20px;
+            bottom: -25px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: bold;
             color: var(--text-color);
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 30px;
             text-align: center;
         }
 
@@ -120,11 +114,11 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-            margin: 0 10px;
-            transition: background-color 0.3s ease, opacity 0.3s ease;
+            margin: 5px 10px;
+            transition: opacity 0.2s;
         }
 
-        button:hover:not(:disabled) {
+        button:hover {
             opacity: 0.8;
         }
 
@@ -190,26 +184,30 @@
 
         .input-controls {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 20px;
             background-color: var(--card-bg-color);
             border-radius: 8px;
             box-shadow: 0 4px 8px var(--shadow-color);
+            width: 100%;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .input-controls input[type="text"] {
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
-            min-width: 200px;
-        }
-
-        .input-controls label {
-            margin-left: 10px;
+            min-width: 250px;
         }
     </style>
 </head>
@@ -217,7 +215,7 @@
     <a href="index.html" class="back-home">← 回首頁</a>
     <div class="container">
         <header>
-            <h1>泡泡排序法 (Bubble Sort) 視覺化工具</h1>
+            <h1>氣泡排序法 (Bubble Sort) 視覺化工具</h1>
         </header>
 
         <main>
@@ -226,19 +224,19 @@
                 <div class="visualization-area">
                     <div id="bar-container"></div>
                     <div class="controls">
-                        <button id="start-sort-btn">自動播放</button>
+                        <button id="start-sort-btn">開始排序</button>
                         <button id="next-step-btn">下一步</button>
                         <button id="reset-btn">重設陣列</button>
                     </div>
                     <div class="input-controls">
-                        <div>
+                        <div class="input-row">
                             <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
+                            <button id="start-custom-sort-btn">套用自訂數字</button>
                         </div>
-                        <div>
-                            <label for="speed-slider">速度:</label>
-                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
-                            <span id="speed-value">200ms</span>
+                        <div class="input-row">
+                            <label for="speed-slider">播放速度:</label>
+                            <input type="range" id="speed-slider" min="50" max="1000" value="300" style="direction: rtl;">
+                            <span id="speed-value">300ms</span>
                         </div>
                     </div>
                 </div>
@@ -246,26 +244,26 @@
 
             <div class="card">
                 <h2>操作原理</h2>
-                <p>泡泡排序法是一種簡單的排序演算法。它重複地走訪過要排序的數列，一次比較兩個元素，如果他們的順序錯誤就把他們交換過來。走訪數列的工作是重複地進行直到沒有再需要交換，也就是說該數列已經排序完成。</p>
+                <p>氣泡排序法是一種簡單直觀的排序演算法。它會重複地走訪過要排序的數列，一次比較兩個相鄰的元素，如果它們的順序錯誤就把它們交換過來。</p>
+                <p>走訪數列的工作會重複地進行，直到沒有再需要交換，這意味著該數列已經排序完成。這個演算法的名字由來是因為越大的元素會經由交換，慢慢「浮」到數列的尾端（或越小的元素浮到頂端）。</p>
             </div>
 
             <div class="card">
                 <h2>操作過程</h2>
                 <ol>
-                    <li>比較相鄰的元素。如果第一個比第二個大，就交換他們兩個。</li>
-                    <li>對每一對相鄰元素作同樣的工作，從開始第一對到結尾的最後一對。這步做完後，最後的元素會是最大的數。</li>
-                    <li>針對所有的元素重複以上的步驟，除了最後一個。</li>
-                    <li>持續每次對越來越少的元素重複上面的步驟，直到沒有任何一對數字需要比較。</li>
+                    <li><strong>比較相鄰元素：</strong> 比較陣列中第 1 個和第 2 個元素。如果第 1 個元素大於第 2 個元素，則交換它們。</li>
+                    <li><strong>向後移動：</strong> 接著比較第 2 個和第 3 個元素，依此類推，直到比較到最後一對相鄰元素。這一步完成後，<strong>最大的元素將會被移動到陣列的最後一個位置</strong>。</li>
+                    <li><strong>重複步驟：</strong> 忽略已經排好序的最後一個元素，對剩下的元素重複步驟 1 和 2。</li>
+                    <li><strong>完成排序：</strong> 每進行一輪，需要比較的元素就少一個，直到所有元素都排序完畢。</li>
                 </ol>
             </div>
 
             <div class="card">
                 <h2>複雜度分析</h2>
                 <ul>
-                    <li><strong>最差時間複雜度:</strong> <code>O(n²)</code></li>
-                    <li><strong>最佳時間複雜度:</strong> <code>O(n)</code> (當輸入陣列已排序)</li>
-                    <li><strong>平均時間複雜度:</strong> <code>O(n²)</code></li>
-                    <li><strong>空間複雜度:</strong> <code>O(1)</code></li>
+                    <li><strong>時間複雜度 (最佳情況):</strong> <code>O(n)</code><br>當陣列已經是排序好的狀態時，氣泡排序只需進行一次走訪，發現沒有元素需要交換即可提早結束。</li>
+                    <li><strong>時間複雜度 (平均/最壞情況):</strong> <code>O(n<sup>2</sup>)</code><br>當陣列是反序時，需要進行完整的 n 輪比較，每輪進行 n-i 次交換，因此效率較低。</li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>氣泡排序是一種「原地排序 (In-place Sort)」，只需要一個額外的空間來暫存變數以進行交換，不需要額外的陣列配置。</li>
                 </ul>
             </div>
         </main>
@@ -285,155 +283,188 @@
         const speedSlider = document.getElementById('speed-slider');
         const speedValue = document.getElementById('speed-value');
 
-        let data = [];
-        const ARRAY_SIZE = 15;
-        let DELAY_MS = 200;
-
-        let originalData = [];
+        let data = [38, 27, 43, 3, 9, 82, 10];
         let steps = [];
-        let currentStepIndex = 0;
+        let currentStep = 0;
         let isSorting = false;
-        let isPaused = true;
-        let sortingInterval = null;
 
-        const renderBars = (highlightIndices = [], sortedIndex = -1) => {
+        // 監聽速度拉桿
+        speedSlider.addEventListener('input', (e) => {
+            speedValue.innerText = `${e.target.value}ms`;
+        });
+
+        // 渲染柱狀圖
+        const renderBars = (highlightIndices = [], sortedIndices = []) => {
             barContainer.innerHTML = '';
+            
+            // 計算最大值來按比例縮放柱子高度，避免過高或過低
+            const maxVal = Math.max(...data, 1); 
+
             data.forEach((value, index) => {
                 const bar = document.createElement('div');
                 bar.classList.add('bar');
-                bar.style.height = `${(value / 100) * 250}px`;
+                // 將最大值映射到最大高度 200px
+                bar.style.height = `${(value / maxVal) * 200 + 20}px`; 
 
                 if (highlightIndices.includes(index)) {
                     bar.style.backgroundColor = 'var(--compare-color)';
-                } else if (sortedIndex !== -1 && index >= sortedIndex) {
+                } else if (sortedIndices.includes(index)) {
                     bar.style.backgroundColor = 'var(--sorted-color)';
-                } else {
-                    bar.style.backgroundColor = 'var(--bar-color)';
                 }
 
                 const label = document.createElement('span');
                 label.classList.add('bar-label');
                 label.innerText = value;
                 bar.appendChild(label);
+
                 barContainer.appendChild(bar);
             });
         };
 
-        const updateButtons = () => {
-            startSortBtn.innerText = isPaused ? "自動播放" : "暫停";
-            if (isSorting) {
-                resetBtn.disabled = true;
-                startCustomSortBtn.disabled = true;
-                customInput.disabled = true;
-                startSortBtn.disabled = false;
-                nextStepBtn.disabled = !isPaused;
-            } else {
-                resetBtn.disabled = false;
-                startCustomSortBtn.disabled = false;
-                customInput.disabled = false;
-                startSortBtn.disabled = false;
-                nextStepBtn.disabled = false;
-                if (currentStepIndex >= steps.length && steps.length > 0) {
-                    startSortBtn.disabled = true;
-                    nextStepBtn.disabled = true;
-                }
-            }
-        };
-
+        // 氣泡排序邏輯，並記錄步驟
         const bubbleSort = (arr) => {
-            const n = arr.length;
-            let currentArr = [...arr];
-            steps = [];
-            for (let i = 0; i < n; i++) {
+            const tempArr = [...arr];
+            const n = tempArr.length;
+            
+            for (let i = 0; i < n - 1; i++) {
+                let swapped = false;
                 for (let j = 0; j < n - i - 1; j++) {
-                    steps.push({ type: 'compare', indices: [j, j + 1], currentData: [...currentArr], sortedIndex: n - i });
-                    if (currentArr[j] > currentArr[j + 1]) {
-                        [currentArr[j], currentArr[j + 1]] = [currentArr[j + 1], currentArr[j]];
-                        steps.push({ type: 'swap', indices: [j, j + 1], currentData: [...currentArr], sortedIndex: n - i });
+                    // 記錄比較步驟
+                    steps.push({ type: 'compare', indices: [j, j + 1] });
+
+                    if (tempArr[j] > tempArr[j + 1]) {
+                        // 在暫存陣列中交換
+                        let temp = tempArr[j];
+                        tempArr[j] = tempArr[j + 1];
+                        tempArr[j + 1] = temp;
+                        swapped = true;
+                        
+                        // 記錄交換步驟
+                        steps.push({ type: 'swap', indices: [j, j + 1], newArr: [...tempArr] });
                     }
                 }
-                steps.push({ type: 'sorted', indices: [], currentData: [...currentArr], sortedIndex: n - i - 1 });
+                // 記錄已確認排序完成的位置 (從最後面開始)
+                steps.push({ type: 'sorted', index: n - i - 1 });
+
+                // 如果這輪沒有發生任何交換，代表已經提早排序完畢
+                if (!swapped) {
+                    for(let k = 0; k < n - i - 1; k++){
+                        steps.push({ type: 'sorted', index: k });
+                    }
+                    break;
+                }
             }
-            steps.push({ type: 'finished', indices: [], currentData: [...currentArr], sortedIndex: 0 });
+            // 標記最前面的元素為已排序
+            if (steps[steps.length-1].type !== 'sorted' || steps[steps.length-1].index !== 0) {
+                 steps.push({ type: 'sorted', index: 0 });
+            }
         };
 
-        const prepareSteps = (arr) => {
+        const prepareSteps = () => {
             steps = [];
-            originalData = [...arr];
-            bubbleSort([...arr]);
-            currentStepIndex = 0;
-            data = [...originalData];
-            isSorting = false;
-            isPaused = true;
-            clearInterval(sortingInterval);
+            bubbleSort([...data]);
+            currentStep = 0;
+            sortedElements = [];
         };
 
+        let sortedElements = [];
         const executeStep = () => {
-            if (currentStepIndex >= steps.length) {
-                isSorting = false;
-                isPaused = true;
-                clearInterval(sortingInterval);
-                renderBars([], 0);
-                updateButtons();
+            if (currentStep >= steps.length) {
+                renderBars([], Array.from(Array(data.length).keys())); // 全部變綠色
+                setButtonsState(false);
                 return;
             }
-            const step = steps[currentStepIndex];
-            data = [...step.currentData];
-            renderBars(step.indices, step.sortedIndex);
-            currentStepIndex++;
-            updateButtons();
+
+            const step = steps[currentStep];
+            if (step.type === 'compare') {
+                renderBars(step.indices, sortedElements);
+            } else if (step.type === 'swap') {
+                const [idx1, idx2] = step.indices;
+                // 交換真實資料
+                let temp = data[idx1];
+                data[idx1] = data[idx2];
+                data[idx2] = temp;
+                renderBars(step.indices, sortedElements);
+            } else if (step.type === 'sorted') {
+                sortedElements.push(step.index);
+                renderBars([], sortedElements);
+            }
+
+            currentStep++;
         };
 
-        const resetArray = (customArray = null) => {
-            clearInterval(sortingInterval);
-            if (customArray) {
-                data = customArray.map(Number);
-            } else {
-                data = Array.from({ length: ARRAY_SIZE }, () => Math.floor(Math.random() * 90) + 10);
-            }
-            prepareSteps(data);
+        const resetArray = () => {
+            isSorting = false;
+            data = Array.from({ length: 10 }, () => Math.floor(Math.random() * 100) + 1);
+            prepareSteps();
             renderBars();
-            updateButtons();
+            setButtonsState(false);
         };
 
-        const playPause = () => {
-            if (isPaused) {
-                isPaused = false;
-                if (currentStepIndex >= steps.length) resetArray(originalData);
-                isSorting = true;
-                sortingInterval = setInterval(executeStep, DELAY_MS);
-            } else {
-                isPaused = true;
-                clearInterval(sortingInterval);
+        const setButtonsState = (disabled) => {
+            startSortBtn.disabled = disabled;
+            nextStepBtn.disabled = disabled;
+            startCustomSortBtn.disabled = disabled;
+        };
+
+        // 按鈕事件綁定
+        startSortBtn.addEventListener('click', async () => {
+            if (currentStep >= steps.length) prepareSteps();
+            isSorting = true;
+            setButtonsState(true);
+            resetBtn.disabled = true;
+
+            while (currentStep < steps.length && isSorting) {
+                executeStep();
+                let delay = parseInt(speedSlider.value);
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
-            updateButtons();
-        };
+            
+            resetBtn.disabled = false;
+        });
 
-        startSortBtn.addEventListener('click', playPause);
-        nextStepBtn.addEventListener('click', () => { if (isPaused || !isSorting) { isSorting = true; executeStep(); } });
-        resetBtn.addEventListener('click', () => resetArray());
+        nextStepBtn.addEventListener('click', executeStep);
+        
+        resetBtn.addEventListener('click', resetArray);
+
         startCustomSortBtn.addEventListener('click', () => {
-            const input = customInput.value;
-            if (input.trim() === '') return alert('請輸入數字！');
-            const customArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0 && n <= 100);
-            if (customArray.length === 0) return alert('請輸入有效數字 (1-100)！');
-            resetArray(customArray);
-        });
-        speedSlider.addEventListener('input', (e) => {
-            DELAY_MS = parseInt(e.target.value);
-            speedValue.innerText = `${DELAY_MS}ms`;
-            if (!isPaused) { clearInterval(sortingInterval); sortingInterval = setInterval(executeStep, DELAY_MS); }
+            const inputVal = customInput.value;
+            const arr = inputVal.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+            
+            if (arr.length > 0 && arr.length <= 20) {
+                data = arr;
+                prepareSteps();
+                renderBars();
+                setButtonsState(false);
+            } else {
+                alert('請輸入有效的數字格式，並以半形逗號分隔 (建議最多 20 個數字)。');
+            }
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            resetArray();
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-mode');
-                themeIcon.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-            });
+        // 暗黑模式切換 (簡易實作)
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        let isDarkMode = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--background-color', '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', '#e6e6e6');
+                document.documentElement.style.setProperty('--card-bg-color', '#16213e');
+                document.documentElement.style.setProperty('--header-color', '#4ea8de');
+                themeIcon.innerText = '☀️';
+            } else {
+                document.documentElement.style.setProperty('--background-color', '#ecf0f1');
+                document.documentElement.style.setProperty('--text-color', '#2c3e50');
+                document.documentElement.style.setProperty('--card-bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--header-color', '#34495e');
+                themeIcon.innerText = '🌙';
+            }
         });
+
+        // 初始化
+        resetArray();
     </script>
 </body>
 </html>
