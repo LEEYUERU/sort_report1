@@ -7,7 +7,7 @@
     <style>
         :root {
             --bar-color: #3498db;
-            --compare-color: #e74c3c; /* 氣泡排序的比較顏色改為紅色比較醒目 */
+            --compare-color: #e74c3c;
             --sorted-color: #2ecc71;
             --background-color: #ecf0f1;
             --text-color: #2c3e50;
@@ -54,6 +54,19 @@
             border-bottom: 2px solid var(--bar-color);
             padding-bottom: 10px;
             margin-top: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 標題旁的小藍色裝飾條 */
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--bar-color);
+            margin-right: 10px;
+            border-radius: 3px;
         }
         
         .card {
@@ -80,11 +93,12 @@
             height: 250px;
             width: 100%;
             border-bottom: 2px solid #bdc3c7;
-            gap: 4px; /* 增加柱子間距 */
+            gap: 4px;
+            margin-bottom: 30px;
         }
 
         .bar {
-            width: 30px; /* 固定寬度 */
+            width: 30px; 
             background-color: var(--bar-color);
             transition: height 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
             position: relative;
@@ -101,8 +115,29 @@
             color: var(--text-color);
         }
 
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
         .controls {
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: center;
         }
 
@@ -127,17 +162,51 @@
             cursor: not-allowed;
             opacity: 0.5;
         }
-
-        code {
-            background-color: rgba(0,0,0,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
         
-        ul {
+        ul, ol {
             padding-left: 20px;
         }
+
+        /* 偽代碼區塊樣式 */
+        .code-container {
+            background-color: #111827; /* 深色背景 */
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #e5e7eb;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .code-line {
+            display: flex;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            white-space: pre;
+        }
+
+        .code-line.active {
+            background-color: rgba(52, 152, 219, 0.4); /* 高亮顏色 */
+            border-left: 3px solid #3498db;
+        }
+
+        .line-num {
+            color: #6b7280;
+            width: 30px;
+            flex-shrink: 0;
+            text-align: right;
+            margin-right: 15px;
+            user-select: none;
+        }
+
+        /* 語法高亮顏色 */
+        .kw { color: #c678dd; } /* 紫色關鍵字 */
+        .fn { color: #61afef; } /* 藍色函數名 */
+        .cm { color: #6b7280; font-style: italic; } /* 灰色註解 */
+        .bl { color: #56b6c2; } /* 青色布林值 */
 
         #theme-toggle {
             position: fixed;
@@ -223,10 +292,16 @@
                 <h2>視覺化展示</h2>
                 <div class="visualization-area">
                     <div id="bar-container"></div>
+                    
+                    <div class="legend">
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 已排序區域</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--compare-color);"></div> 比較 / 交換中</div>
+                    </div>
+
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
                         <button id="next-step-btn">下一步</button>
-                        <button id="reset-btn">重設陣列</button>
+                        <button id="reset-btn">隨機產生</button>
                     </div>
                     <div class="input-controls">
                         <div class="input-row">
@@ -239,6 +314,22 @@
                             <span id="speed-value">300ms</span>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 新增的偽代碼區塊 -->
+            <div class="card">
+                <h2>演算法偽代碼</h2>
+                <div class="code-container" id="pseudocode">
+                    <div class="code-line" id="line-0"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">bubbleSort</span>(arr):</div>
+                    <div class="code-line" id="line-1"><span class="line-num">1</span>  n = arr.length</div>
+                    <div class="code-line" id="line-2"><span class="line-num">2</span>  <span class="kw">for</span> i = 0 <span class="kw">to</span> n-2: <span class="cm">// 共 n-1 輪</span></div>
+                    <div class="code-line" id="line-3"><span class="line-num">3</span>    swapped = <span class="kw">false</span></div>
+                    <div class="code-line" id="line-4"><span class="line-num">4</span>    <span class="kw">for</span> j = 0 <span class="kw">to</span> n-2-i: <span class="cm">// 已就位的不再比較</span></div>
+                    <div class="code-line" id="line-5"><span class="line-num">5</span>      <span class="kw">if</span> arr[j] > arr[j+1]:</div>
+                    <div class="code-line" id="line-6"><span class="line-num">6</span>        swap(arr[j], arr[j+1])</div>
+                    <div class="code-line" id="line-7"><span class="line-num">7</span>        swapped = <span class="kw">true</span></div>
+                    <div class="code-line" id="line-8"><span class="line-num">8</span>    <span class="kw">if not</span> swapped: <span class="kw">break</span> <span class="cm">// 提前結束最佳化</span></div>
                 </div>
             </div>
 
@@ -258,14 +349,6 @@
                 </ol>
             </div>
 
-            <div class="card">
-                <h2>複雜度分析</h2>
-                <ul>
-                    <li><strong>時間複雜度 (最佳情況):</strong> <code>O(n)</code><br>當陣列已經是排序好的狀態時，氣泡排序只需進行一次走訪，發現沒有元素需要交換即可提早結束。</li>
-                    <li><strong>時間複雜度 (平均/最壞情況):</strong> <code>O(n<sup>2</sup>)</code><br>當陣列是反序時，需要進行完整的 n 輪比較，每輪進行 n-i 次交換，因此效率較低。</li>
-                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>氣泡排序是一種「原地排序 (In-place Sort)」，只需要一個額外的空間來暫存變數以進行交換，不需要額外的陣列配置。</li>
-                </ul>
-            </div>
         </main>
     </div>
 
@@ -283,27 +366,23 @@
         const speedSlider = document.getElementById('speed-slider');
         const speedValue = document.getElementById('speed-value');
 
-        let data = [38, 27, 43, 3, 9, 82, 10];
+        let data = [];
         let steps = [];
         let currentStep = 0;
         let isSorting = false;
+        let sortedElements = [];
 
-        // 監聽速度拉桿
         speedSlider.addEventListener('input', (e) => {
             speedValue.innerText = `${e.target.value}ms`;
         });
 
-        // 渲染柱狀圖
         const renderBars = (highlightIndices = [], sortedIndices = []) => {
             barContainer.innerHTML = '';
-            
-            // 計算最大值來按比例縮放柱子高度，避免過高或過低
             const maxVal = Math.max(...data, 1); 
 
             data.forEach((value, index) => {
                 const bar = document.createElement('div');
                 bar.classList.add('bar');
-                // 將最大值映射到最大高度 200px
                 bar.style.height = `${(value / maxVal) * 200 + 20}px`; 
 
                 if (highlightIndices.includes(index)) {
@@ -321,42 +400,52 @@
             });
         };
 
-        // 氣泡排序邏輯，並記錄步驟
+        // 處理偽代碼高亮邏輯
+        const highlightCodeLine = (lineNum) => {
+            // 先清除所有高亮
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+            // 加上新的高亮
+            if (lineNum !== null) {
+                const targetLine = document.getElementById(`line-${lineNum}`);
+                if (targetLine) targetLine.classList.add('active');
+            }
+        };
+
+        // 氣泡排序邏輯，記錄陣列步驟與對應的程式碼行號
         const bubbleSort = (arr) => {
             const tempArr = [...arr];
             const n = tempArr.length;
             
             for (let i = 0; i < n - 1; i++) {
                 let swapped = false;
+                
                 for (let j = 0; j < n - i - 1; j++) {
-                    // 記錄比較步驟
-                    steps.push({ type: 'compare', indices: [j, j + 1] });
+                    // 第5行：比較
+                    steps.push({ type: 'compare', indices: [j, j + 1], line: 5 });
 
                     if (tempArr[j] > tempArr[j + 1]) {
-                        // 在暫存陣列中交換
+                        // 第6行：交換
                         let temp = tempArr[j];
                         tempArr[j] = tempArr[j + 1];
                         tempArr[j + 1] = temp;
                         swapped = true;
                         
-                        // 記錄交換步驟
-                        steps.push({ type: 'swap', indices: [j, j + 1], newArr: [...tempArr] });
+                        steps.push({ type: 'swap', indices: [j, j + 1], line: 6 });
                     }
                 }
-                // 記錄已確認排序完成的位置 (從最後面開始)
-                steps.push({ type: 'sorted', index: n - i - 1 });
+                
+                steps.push({ type: 'sorted', index: n - i - 1, line: 8 });
 
-                // 如果這輪沒有發生任何交換，代表已經提早排序完畢
+                // 第8行：提前結束判斷
                 if (!swapped) {
                     for(let k = 0; k < n - i - 1; k++){
-                        steps.push({ type: 'sorted', index: k });
+                        steps.push({ type: 'sorted', index: k, line: null });
                     }
                     break;
                 }
             }
-            // 標記最前面的元素為已排序
-            if (steps[steps.length-1].type !== 'sorted' || steps[steps.length-1].index !== 0) {
-                 steps.push({ type: 'sorted', index: 0 });
+            if (steps.length > 0 && (steps[steps.length-1].type !== 'sorted' || steps[steps.length-1].index !== 0)) {
+                 steps.push({ type: 'sorted', index: 0, line: null });
             }
         };
 
@@ -365,28 +454,36 @@
             bubbleSort([...data]);
             currentStep = 0;
             sortedElements = [];
+            highlightCodeLine(null);
         };
 
-        let sortedElements = [];
         const executeStep = () => {
             if (currentStep >= steps.length) {
-                renderBars([], Array.from(Array(data.length).keys())); // 全部變綠色
+                renderBars([], Array.from(Array(data.length).keys()));
                 setButtonsState(false);
+                highlightCodeLine(null);
                 return;
             }
 
             const step = steps[currentStep];
+            
+            // 執行對應的程式碼行高亮
+            if (step.line !== undefined) {
+                highlightCodeLine(step.line);
+            }
+
             if (step.type === 'compare') {
                 renderBars(step.indices, sortedElements);
             } else if (step.type === 'swap') {
                 const [idx1, idx2] = step.indices;
-                // 交換真實資料
                 let temp = data[idx1];
                 data[idx1] = data[idx2];
                 data[idx2] = temp;
                 renderBars(step.indices, sortedElements);
             } else if (step.type === 'sorted') {
-                sortedElements.push(step.index);
+                if(!sortedElements.includes(step.index)){
+                    sortedElements.push(step.index);
+                }
                 renderBars([], sortedElements);
             }
 
@@ -395,7 +492,7 @@
 
         const resetArray = () => {
             isSorting = false;
-            data = Array.from({ length: 10 }, () => Math.floor(Math.random() * 100) + 1);
+            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 99) + 1);
             prepareSteps();
             renderBars();
             setButtonsState(false);
@@ -407,7 +504,6 @@
             startCustomSortBtn.disabled = disabled;
         };
 
-        // 按鈕事件綁定
         startSortBtn.addEventListener('click', async () => {
             if (currentStep >= steps.length) prepareSteps();
             isSorting = true;
@@ -421,6 +517,7 @@
             }
             
             resetBtn.disabled = false;
+            highlightCodeLine(null); // 結束後取消高亮
         });
 
         nextStepBtn.addEventListener('click', executeStep);
@@ -441,7 +538,6 @@
             }
         });
 
-        // 暗黑模式切換 (簡易實作)
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         let isDarkMode = false;
@@ -463,7 +559,6 @@
             }
         });
 
-        // 初始化
         resetArray();
     </script>
 </body>
