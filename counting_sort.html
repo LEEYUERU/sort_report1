@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>合併排序法 (Merge Sort) 視覺化工具</title>
+    <title>計數排序法 (Counting Sort) 視覺化工具</title>
     <style>
         :root {
             --bar-color: #3498db;
-            --compare-color: #f1c40f; /* 比較中 (黃色) */
-            --sorted-color: #2ecc71;  /* 寫入/排序完成 (綠色) */
+            --read-color: #e74c3c;    /* 讀取/計算中 (紅色) */
+            --write-color: #9b59b6;   /* 寫回陣列中 (紫色) */
+            --sorted-color: #2ecc71;  /* 已排序 (綠色) */
+            --count-box-bg: #fff;
+            --count-box-border: #bdc3c7;
             --background-color: #ecf0f1;
             --text-color: #2c3e50;
             --header-color: #34495e;
             --card-bg-color: #ffffff;
-            --grid-border: #95a5a6;
             --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             --shadow-color: rgba(0,0,0,0.1);
         }
@@ -59,6 +61,7 @@
             align-items: center;
         }
 
+        /* 標題旁的小藍色裝飾條 */
         h2::before {
             content: '';
             display: inline-block;
@@ -86,59 +89,95 @@
             min-height: 350px;
         }
 
+        /* 原始陣列長條圖 */
         #bar-container {
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            height: 250px;
+            height: 200px;
             width: 100%;
-            border-bottom: 2px solid var(--grid-border);
+            border-bottom: 2px solid #bdc3c7;
             gap: 6px;
-            padding-bottom: 10px;
-        }
-
-        .bar-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            height: 100%;
-            transition: opacity 0.3s ease, transform 0.2s ease;
-        }
-
-        /* 未在合併區間內的元素變暗 */
-        .bar-wrapper.dimmed {
-            opacity: 0.25; 
+            margin-bottom: 30px;
         }
 
         .bar {
             width: 35px;
             background-color: var(--bar-color);
             transition: height 0.3s ease, background-color 0.3s ease;
+            position: relative;
             border-radius: 4px 4px 0 0;
         }
         
-        /* 底部的數值格子 */
-        .grid-box {
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* 計數陣列顯示區 */
+        .count-array-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--header-color);
+        }
+
+        #count-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .count-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .count-index {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+        }
+
+        .count-box {
             width: 35px;
             height: 35px;
-            border: 2px solid var(--grid-border);
-            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 5px;
+            background-color: var(--count-box-bg);
+            border: 2px solid var(--count-box-border);
+            border-radius: 4px;
             font-weight: bold;
-            font-size: 14px;
-            background-color: var(--card-bg-color);
             color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .count-box.highlight {
+            background-color: var(--read-color);
+            color: white;
+            border-color: var(--read-color);
+            transform: scale(1.1);
+        }
+        .count-box.write-highlight {
+            background-color: var(--write-color);
+            color: white;
+            border-color: var(--write-color);
+            transform: scale(1.1);
         }
 
         .legend {
             display: flex;
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 10px;
             font-size: 0.9rem;
             flex-wrap: wrap;
             justify-content: center;
@@ -182,7 +221,7 @@
             cursor: not-allowed;
             opacity: 0.5;
         }
-
+        
         ul, ol {
             padding-left: 20px;
         }
@@ -262,7 +301,6 @@
             display: flex;
             align-items: center;
             z-index: 1000;
-            transition: transform 0.3s, box-shadow 0.3s;
         }
         .back-home:hover {
             transform: translateY(-2px);
@@ -302,7 +340,7 @@
     <a href="index.html" class="back-home">← 回首頁</a>
     <div class="container">
         <header>
-            <h1>合併排序法 (Merge Sort) 視覺化工具</h1>
+            <h1>計數排序法 (Counting Sort) 視覺化工具</h1>
         </header>
 
         <main>
@@ -311,12 +349,14 @@
                 <div class="visualization-area">
                     <div id="bar-container"></div>
                     
-                    <div class="legend">
-                        <div class="legend-item"><div class="color-box" style="background-color: var(--compare-color);"></div> 左右比較中</div>
-                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 合併並寫回陣列</div>
-                        <div class="legend-item"><span style="opacity: 0.4;">░░░</span> 非當前處理區間 (變暗)</div>
-                    </div>
+                    <div class="count-array-title">計數陣列 (Count Array)</div>
+                    <div id="count-container"></div>
 
+                    <div class="legend">
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--read-color);"></div> 掃描與計數中</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--write-color);"></div> 寫回陣列中</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 排序完成</div>
+                    </div>
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
                         <button id="next-step-btn">下一步</button>
@@ -324,7 +364,7 @@
                     </div>
                     <div class="input-controls">
                         <div class="input-row">
-                            <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
+                            <input type="text" id="custom-input" placeholder="輸入數字(限0~20), 逗號分隔">
                             <button id="start-custom-sort-btn">套用自訂數字</button>
                         </div>
                         <div class="input-row">
@@ -340,45 +380,41 @@
             <div class="card">
                 <h2>演算法偽代碼</h2>
                 <div class="code-container" id="pseudocode">
-                    <div class="code-line" id="line-0"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">mergeSort</span>(arr, start, end):</div>
-                    <div class="code-line" id="line-1"><span class="line-num">1</span>  <span class="kw">if</span> start >= end: <span class="kw">return</span></div>
-                    <div class="code-line" id="line-2"><span class="line-num">2</span>  mid = floor((start + end) / 2)</div>
-                    <div class="code-line" id="line-3"><span class="line-num">3</span>  mergeSort(arr, start, mid) <span class="cm">// 分割左半邊</span></div>
-                    <div class="code-line" id="line-4"><span class="line-num">4</span>  mergeSort(arr, mid + 1, end) <span class="cm">// 分割右半邊</span></div>
-                    <div class="code-line" id="line-5"><span class="line-num">5</span>  merge(arr, start, mid, end) <span class="cm">// 將兩邊合併</span></div>
-                    <div class="code-line" id="line-6"><span class="line-num"> </span></div>
-                    <div class="code-line" id="line-7"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">merge</span>(arr, start, mid, end):</div>
-                    <div class="code-line" id="line-8"><span class="line-num">6</span>  <span class="kw">while</span> left &lt;= mid <span class="kw">and</span> right &lt;= end:</div>
-                    <div class="code-line" id="line-9"><span class="line-num">7</span>    <span class="kw">if</span> arr[left] &lt;= arr[right]: <span class="cm">// 比較兩邊最小元素</span></div>
-                    <div class="code-line" id="line-10"><span class="line-num">8</span>      temp.push(arr[left])</div>
-                    <div class="code-line" id="line-11"><span class="line-num">9</span>    <span class="kw">else</span>:</div>
-                    <div class="code-line" id="line-12"><span class="line-num">10</span>     temp.push(arr[right])</div>
-                    <div class="code-line" id="line-13"><span class="line-num">11</span> <span class="cm">// ...將剩餘元素放入 temp 陣列中...</span></div>
-                    <div class="code-line" id="line-14"><span class="line-num">12</span> <span class="kw">for</span> k = 0 <span class="kw">to</span> temp.length - 1:</div>
-                    <div class="code-line" id="line-15"><span class="line-num">13</span>   arr[start + k] = temp[k] <span class="cm">// 將排好序的 temp 寫回原陣列</span></div>
+                    <div class="code-line" id="line-0"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">countingSort</span>(arr):</div>
+                    <div class="code-line" id="line-1"><span class="line-num">1</span>  max_val = max(arr)</div>
+                    <div class="code-line" id="line-2"><span class="line-num">2</span>  countArr = <span class="kw">new</span> Array(max_val + 1).fill(0)</div>
+                    <div class="code-line" id="line-3"><span class="line-num">3</span>  <span class="kw">for</span> i = 0 <span class="kw">to</span> arr.length - 1:</div>
+                    <div class="code-line" id="line-4"><span class="line-num">4</span>    countArr[arr[i]]++ <span class="cm">// 計算各元素出現次數</span></div>
+                    <div class="code-line" id="line-5"><span class="line-num">5</span>  target_idx = 0</div>
+                    <div class="code-line" id="line-6"><span class="line-num">6</span>  <span class="kw">for</span> i = 0 <span class="kw">to</span> max_val:</div>
+                    <div class="code-line" id="line-7"><span class="line-num">7</span>    <span class="kw">while</span> countArr[i] > 0:</div>
+                    <div class="code-line" id="line-8"><span class="line-num">8</span>      arr[target_idx] = i <span class="cm">// 依序寫回原陣列</span></div>
+                    <div class="code-line" id="line-9"><span class="line-num">9</span>      countArr[i]--</div>
+                    <div class="code-line" id="line-10"><span class="line-num">10</span>     target_idx++</div>
                 </div>
             </div>
 
             <div class="card">
                 <h2>操作原理</h2>
-                <p>合併排序法是一種高效的、基於分治法 (Divide and Conquer) 的排序演算法。它將一個大問題分解成數個小問題來解決，然後再將小問題的解合併起來，得到原問題的解。</p>
-                <p>這個演算法的核心思想是「先分割，後合併」。它能保證穩定的排序結果，且時間複雜度表現優秀。</p>
+                <p>計數排序法 (Counting Sort) 是一種<strong>非比較型</strong>的排序演算法。它不依賴元素之間的比較，而是利用陣列的索引（Index）來記錄元素出現的次數。</p>
+                <p>它的核心思想是：找出陣列中的最大值 <code>k</code>，建立一個長度為 <code>k+1</code> 的新陣列（計數陣列）。接著走訪原本的陣列，每遇到一個數字，就在計數陣列對應的索引位置將次數加一。最後，按照計數陣列的順序和次數，依序將數字填回原本的陣列中，排序就完成了。</p>
             </div>
 
             <div class="card">
                 <h2>操作過程</h2>
                 <ol>
-                    <li><strong>分割 (Divide):</strong> 將目前的陣列遞迴地對半分割，直到每個子陣列只剩下一個元素。只包含一個元素的陣列被視為已排序。</li>
-                    <li><strong>合併 (Conquer/Merge):</strong> 從最小的子陣列開始，兩兩成對地進行合併。在合併過程中，比較兩個子陣列的元素，並按照順序將它們放入一個新的臨時陣列中。</li>
-                    <li>重複合併步驟，直到所有子陣列都被合併回一個完整的、已排序的陣列。</li>
+                    <li><strong>找出最大值：</strong> 掃描整個陣列，找出其中的最大值 <code>k</code>。</li>
+                    <li><strong>建立計數陣列：</strong> 建立一個長度為 <code>k+1</code> 的計數陣列，並將所有元素初始化為 0。</li>
+                    <li><strong>統計次數：</strong> 走訪原陣列，遇到數字 <code>x</code>，就將計數陣列索引為 <code>x</code> 的位置加 1。</li>
+                    <li><strong>寫回原陣列：</strong> 從頭掃描計數陣列，索引 <code>i</code> 的位置值為 <code>c</code> 時，代表數字 <code>i</code> 出現了 <code>c</code> 次，依序將 <code>c</code> 個 <code>i</code> 寫回原陣列即可。</li>
                 </ol>
             </div>
 
             <div class="card">
                 <h2>複雜度分析</h2>
                 <ul>
-                    <li><strong>時間複雜度 (所有情況):</strong> <code>O(n log n)</code><br>無論是最好、最壞還是平均情況，合併排序法的時間複雜度都非常穩定。分割過程需要 log n 層，每層的合併操作總共需要 O(n) 的時間。</li>
-                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(n)</code><br>合併操作需要一個與原陣列等大的臨時陣列來存放合併後的結果，因此空間複雜度為 O(n)。</li>
+                    <li><strong>時間複雜度:</strong> <code>O(n + k)</code><br>其中 <code>n</code> 是陣列長度，<code>k</code> 是陣列中的最大值。因為只需要走訪原陣列和計數陣列各一次，速度非常快（線性時間）。</li>
+                    <li><strong>空間複雜度:</strong> <code>O(k)</code><br>需要一個額外的計數陣列，長度取決於原陣列中的最大數字 <code>k</code>。如果 <code>k</code> 極大（例如數字包含一百萬），則會非常消耗記憶體，因此<strong>計數排序只適合用在資料範圍較小且集中的情況</strong>。</li>
                 </ul>
             </div>
         </main>
@@ -390,6 +426,7 @@
 
     <script>
         const barContainer = document.getElementById('bar-container');
+        const countContainer = document.getElementById('count-container');
         const startSortBtn = document.getElementById('start-sort-btn');
         const nextStepBtn = document.getElementById('next-step-btn');
         const resetBtn = document.getElementById('reset-btn');
@@ -403,58 +440,61 @@
         let currentStep = 0;
         let isSorting = false;
 
-        // 速度拉桿更新
         speedSlider.addEventListener('input', (e) => {
             speedValue.innerText = `${e.target.value}ms`;
         });
 
-        // 渲染長條圖與格子
-        const renderBars = (activeRange = [], compareIndices = [], overwriteIndex = -1) => {
+        const renderBars = (currentArr, highlightIndex = -1, mode = '') => {
             barContainer.innerHTML = '';
-            const maxVal = Math.max(...data, 1);
+            
+            const maxVal = Math.max(...currentArr, 20); 
 
-            data.forEach((value, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.classList.add('bar-wrapper');
-
-                // 檢查是否在當前合併區間外，若在區間外則變暗
-                if (activeRange.length > 0 && (index < activeRange[0] || index > activeRange[1])) {
-                    wrapper.classList.add('dimmed');
-                }
-
+            currentArr.forEach((value, index) => {
                 const bar = document.createElement('div');
                 bar.classList.add('bar');
-                bar.style.height = `${(value / maxVal) * 160 + 10}px`;
+                
+                let heightPixel = (value / maxVal) * 180;
+                if (heightPixel < 5) heightPixel = 5; 
+                bar.style.height = `${heightPixel}px`; 
 
-                const gridBox = document.createElement('div');
-                gridBox.classList.add('grid-box');
-                gridBox.innerText = value;
-
-                // 正在比較的元素 (黃色 + 微上浮)
-                if (compareIndices.includes(index)) {
-                    bar.style.backgroundColor = 'var(--compare-color)';
-                    gridBox.style.backgroundColor = 'var(--compare-color)';
-                    gridBox.style.borderColor = 'var(--compare-color)';
-                    gridBox.style.color = '#000';
-                    wrapper.style.transform = 'translateY(-5px)';
-                } 
-                // 正在被覆蓋/寫入的元素 (綠色 + 明顯上浮)
-                else if (index === overwriteIndex) {
+                if (index === highlightIndex) {
+                    if (mode === 'read') bar.style.backgroundColor = 'var(--read-color)';
+                    if (mode === 'write') bar.style.backgroundColor = 'var(--write-color)';
+                } else if (mode === 'done') {
                     bar.style.backgroundColor = 'var(--sorted-color)';
-                    gridBox.style.backgroundColor = 'var(--sorted-color)';
-                    gridBox.style.borderColor = 'var(--sorted-color)';
-                    gridBox.style.color = '#fff';
-                    wrapper.style.transform = 'translateY(-10px)';
-                }
-                // 整個排序結束時全綠
-                else if (activeRange[0] === -1) {
-                    bar.style.backgroundColor = 'var(--sorted-color)';
-                    gridBox.style.borderColor = 'var(--sorted-color)';
                 }
 
-                wrapper.appendChild(bar);
-                wrapper.appendChild(gridBox);
-                barContainer.appendChild(wrapper);
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+
+        const renderCountArray = (countArr, highlightIndex = -1, mode = '') => {
+            countContainer.innerHTML = '';
+            countArr.forEach((count, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('count-box-wrapper');
+
+                const indexLabel = document.createElement('div');
+                indexLabel.classList.add('count-index');
+                indexLabel.innerText = index;
+
+                const box = document.createElement('div');
+                box.classList.add('count-box');
+                box.innerText = count;
+
+                if (index === highlightIndex) {
+                    if (mode === 'read') box.classList.add('highlight');
+                    if (mode === 'write') box.classList.add('write-highlight');
+                }
+
+                wrapper.appendChild(indexLabel);
+                wrapper.appendChild(box);
+                countContainer.appendChild(wrapper);
             });
         };
 
@@ -467,54 +507,57 @@
             }
         };
 
-        const mergeSort = (arr, start, end) => {
-            if (start >= end) return;
+        const prepareSteps = () => {
+            steps = [];
+            let tempArr = [...data];
+            let maxVal = Math.max(...tempArr, 0);
+            
+            let countArr = new Array(maxVal + 1).fill(0);
+            
+            // line 2: 建立計數陣列
+            steps.push({ type: 'init', arr: [...tempArr], counts: [...countArr], line: 2 });
 
-            const mid = Math.floor((start + end) / 2);
-            mergeSort(arr, start, mid);
-            mergeSort(arr, mid + 1, end);
-            merge(arr, start, mid, end);
-        };
+            // 1. 計算次數 (Read Phase)
+            for (let i = 0; i < tempArr.length; i++) {
+                let val = tempArr[i];
+                countArr[val]++;
+                // line 4: 計算各元素出現次數
+                steps.push({ 
+                    type: 'read', 
+                    arr: [...tempArr], 
+                    counts: [...countArr], 
+                    arrIdx: i, 
+                    countIdx: val,
+                    line: 4
+                });
+            }
 
-        const merge = (arr, start, mid, end) => {
-            const temp = [];
-            let i = start, j = mid + 1;
-
-            // 比較兩個子陣列
-            while (i <= mid && j <= end) {
-                // line: 9 對應偽代碼的 if 比較
-                steps.push({ type: 'compare', indices: [i, j], range: [start, end], line: 9 });
-
-                if (arr[i] <= arr[j]) {
-                    temp.push(arr[i]);
-                    i++;
-                } else {
-                    temp.push(arr[j]);
-                    j++;
+            // 2. 寫回陣列 (Write Phase)
+            let targetIdx = 0;
+            for (let i = 0; i <= maxVal; i++) {
+                while (countArr[i] > 0) {
+                    tempArr[targetIdx] = i;
+                    countArr[i]--;
+                    // line 8: 依序寫回原陣列
+                    steps.push({ 
+                        type: 'write', 
+                        arr: [...tempArr], 
+                        counts: [...countArr], 
+                        arrIdx: targetIdx, 
+                        countIdx: i,
+                        line: 8
+                    });
+                    targetIdx++;
                 }
             }
 
-            while (i <= mid) temp.push(arr[i++]);
-            while (j <= end) temp.push(arr[j++]);
-
-            // 將暫存陣列寫回原陣列
-            for (let k = 0; k < temp.length; k++) {
-                arr[start + k] = temp[k];
-                // line: 15 對應偽代碼的 寫回陣列
-                steps.push({ type: 'overwrite', index: start + k, value: temp[k], range: [start, end], line: 15 });
-            }
-        };
-
-        const prepareSteps = () => {
-            steps = [];
-            mergeSort([...data], 0, data.length - 1);
+            steps.push({ type: 'done', arr: [...tempArr], counts: [...countArr], line: null });
             currentStep = 0;
             highlightCodeLine(null);
         };
 
         const executeStep = () => {
             if (currentStep >= steps.length) {
-                renderBars([-1, -1]); // 全部變綠
                 setButtonsState(false);
                 highlightCodeLine(null);
                 return;
@@ -526,11 +569,19 @@
                 highlightCodeLine(step.line);
             }
 
-            if (step.type === 'compare') {
-                renderBars(step.range, step.indices, -1);
-            } else if (step.type === 'overwrite') {
-                data[step.index] = step.value;
-                renderBars(step.range, [], step.index);
+            if (step.type === 'init') {
+                renderBars(step.arr);
+                renderCountArray(step.counts);
+            } else if (step.type === 'read') {
+                renderBars(step.arr, step.arrIdx, 'read');
+                renderCountArray(step.counts, step.countIdx, 'read');
+            } else if (step.type === 'write') {
+                renderBars(step.arr, step.arrIdx, 'write');
+                renderCountArray(step.counts, step.countIdx, 'write');
+            } else if (step.type === 'done') {
+                renderBars(step.arr, -1, 'done');
+                renderCountArray(step.counts);
+                setButtonsState(false);
             }
 
             currentStep++;
@@ -538,9 +589,13 @@
 
         const resetArray = () => {
             isSorting = false;
-            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 99) + 1);
+            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 16));
+            
+            let maxVal = Math.max(...data, 0);
+            renderBars(data);
+            renderCountArray(new Array(maxVal + 1).fill(0));
+            
             prepareSteps();
-            renderBars();
             setButtonsState(false);
         };
 
@@ -567,6 +622,7 @@
         });
 
         nextStepBtn.addEventListener('click', executeStep);
+        
         resetBtn.addEventListener('click', resetArray);
 
         startCustomSortBtn.addEventListener('click', () => {
@@ -574,16 +630,29 @@
             const arr = inputVal.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
             
             if (arr.length > 0 && arr.length <= 20) {
+                const maxInArr = Math.max(...arr);
+                if (maxInArr > 30) {
+                    alert('為了視覺化排版美觀，請避免輸入大於 30 的數字！');
+                    return;
+                }
+                const minInArr = Math.min(...arr);
+                if (minInArr < 0) {
+                    alert('基礎計數排序法不支援負數，請輸入 0 或正整數！');
+                    return;
+                }
+
                 data = arr;
+                let maxVal = Math.max(...data, 0);
+                renderBars(data);
+                renderCountArray(new Array(maxVal + 1).fill(0));
+                
                 prepareSteps();
-                renderBars();
                 setButtonsState(false);
             } else {
-                alert('請輸入有效的數字格式，並以半形逗號分隔 (建議最多 20 個數字)。');
+                alert('請輸入有效的數字格式，並以半形逗號分隔 (最多 20 個數字)。');
             }
         });
 
-        // 黑暗模式切換邏輯
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         let isDarkMode = false;
@@ -595,19 +664,20 @@
                 document.documentElement.style.setProperty('--text-color', '#e6e6e6');
                 document.documentElement.style.setProperty('--card-bg-color', '#16213e');
                 document.documentElement.style.setProperty('--header-color', '#4ea8de');
-                document.documentElement.style.setProperty('--grid-border', '#4b5563');
+                document.documentElement.style.setProperty('--count-box-bg', '#1f2937');
+                document.documentElement.style.setProperty('--count-box-border', '#4b5563');
                 themeIcon.innerText = '☀️';
             } else {
                 document.documentElement.style.setProperty('--background-color', '#ecf0f1');
                 document.documentElement.style.setProperty('--text-color', '#2c3e50');
                 document.documentElement.style.setProperty('--card-bg-color', '#ffffff');
                 document.documentElement.style.setProperty('--header-color', '#34495e');
-                document.documentElement.style.setProperty('--grid-border', '#95a5a6');
+                document.documentElement.style.setProperty('--count-box-bg', '#fff');
+                document.documentElement.style.setProperty('--count-box-border', '#bdc3c7');
                 themeIcon.innerText = '🌙';
             }
         });
 
-        // 初始化
         resetArray();
     </script>
 </body>
