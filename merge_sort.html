@@ -7,12 +7,13 @@
     <style>
         :root {
             --bar-color: #3498db;
-            --compare-color: #f1c40f;
-            --sorted-color: #2ecc71;
+            --compare-color: #f1c40f; /* 比較中 (黃色) */
+            --sorted-color: #2ecc71;  /* 寫入/排序完成 (綠色) */
             --background-color: #ecf0f1;
             --text-color: #2c3e50;
             --header-color: #34495e;
             --card-bg-color: #ffffff;
+            --grid-border: #95a5a6;
             --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             --shadow-color: rgba(0,0,0,0.1);
         }
@@ -70,32 +71,78 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
+            min-height: 350px;
         }
 
         #bar-container {
             display: flex;
             align-items: flex-end;
+            justify-content: center;
             height: 250px;
             width: 100%;
-            border-bottom: 2px solid #bdc3c7;
+            border-bottom: 2px solid var(--grid-border);
+            gap: 6px;
+            padding-bottom: 10px;
+        }
+
+        /* 包裝長條圖與底部格子的容器 */
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+        }
+
+        /* 未在合併區間內的元素變暗 */
+        .bar-wrapper.dimmed {
+            opacity: 0.25; 
         }
 
         .bar {
-            flex-grow: 1;
+            width: 35px;
             background-color: var(--bar-color);
-            margin: 0 2px;
             transition: height 0.3s ease, background-color 0.3s ease;
-            position: relative;
+            border-radius: 4px 4px 0 0;
         }
         
-        .bar-label {
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
+        /* 底部的數值格子 */
+        .grid-box {
+            width: 35px;
+            height: 35px;
+            border: 2px solid var(--grid-border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            background-color: var(--card-bg-color);
             color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
         }
 
         .controls {
@@ -111,7 +158,8 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-            margin: 0 10px;
+            margin: 5px 10px;
+            transition: opacity 0.2s;
         }
 
         button:hover {
@@ -131,7 +179,7 @@
             font-family: 'Courier New', Courier, monospace;
         }
         
-        ul {
+        ul, ol {
             padding-left: 20px;
         }
 
@@ -180,43 +228,30 @@
 
         .input-controls {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 20px;
             background-color: var(--card-bg-color);
             border-radius: 8px;
             box-shadow: 0 4px 8px var(--shadow-color);
+            width: 100%;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .input-controls input[type="text"] {
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
-            min-width: 200px;
-        }
-
-        .input-controls label {
-            margin-left: 10px;
-        }
-
-        .bar-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            height: 300px;
-            margin: 20px 0;
-            border: 1px solid var(--header-color);
-            background-color: var(--card-bg-color);
-        }
-
-        .bar {
-            width: 30px;
-            margin: 0 2px;
-            background-color: var(--bar-color);
-            transition: height 0.3s, background-color 0.3s;
+            min-width: 250px;
         }
     </style>
 </head>
@@ -232,20 +267,27 @@
                 <h2>視覺化展示</h2>
                 <div class="visualization-area">
                     <div id="bar-container"></div>
+                    
+                    <div class="legend">
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--compare-color);"></div> 左右比較中</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 合併並寫回陣列</div>
+                        <div class="legend-item"><span style="opacity: 0.4;">░░░</span> 非當前處理區間 (變暗)</div>
+                    </div>
+
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
                         <button id="next-step-btn">下一步</button>
-                        <button id="reset-btn">重設陣列</button>
+                        <button id="reset-btn">隨機產生</button>
                     </div>
                     <div class="input-controls">
-                        <div>
+                        <div class="input-row">
                             <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
+                            <button id="start-custom-sort-btn">套用自訂數字</button>
                         </div>
-                        <div>
-                            <label for="speed-slider">速度:</label>
-                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
-                            <span id="speed-value">200ms</span>
+                        <div class="input-row">
+                            <label for="speed-slider">播放速度:</label>
+                            <input type="range" id="speed-slider" min="50" max="1500" value="400" style="direction: rtl;">
+                            <span id="speed-value">400ms</span>
                         </div>
                     </div>
                 </div>
@@ -285,28 +327,68 @@
         const startSortBtn = document.getElementById('start-sort-btn');
         const nextStepBtn = document.getElementById('next-step-btn');
         const resetBtn = document.getElementById('reset-btn');
+        const customInput = document.getElementById('custom-input');
+        const startCustomSortBtn = document.getElementById('start-custom-sort-btn');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
 
         let data = [38, 27, 43, 3, 9, 82, 10];
         let steps = [];
         let currentStep = 0;
+        let isSorting = false;
 
-        const renderBars = (highlightIndices = []) => {
+        // 速度拉桿更新
+        speedSlider.addEventListener('input', (e) => {
+            speedValue.innerText = `${e.target.value}ms`;
+        });
+
+        // 渲染長條圖與格子
+        const renderBars = (activeRange = [], compareIndices = [], overwriteIndex = -1) => {
             barContainer.innerHTML = '';
-            data.forEach((value, index) => {
-                const bar = document.createElement('div');
-                bar.classList.add('bar');
-                bar.style.height = `${value * 3}px`;
+            const maxVal = Math.max(...data, 1);
 
-                if (highlightIndices.includes(index)) {
-                    bar.style.backgroundColor = 'var(--compare-color)';
+            data.forEach((value, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('bar-wrapper');
+
+                // 檢查是否在當前合併區間外，若在區間外則變暗
+                if (activeRange.length > 0 && (index < activeRange[0] || index > activeRange[1])) {
+                    wrapper.classList.add('dimmed');
                 }
 
-                const label = document.createElement('span');
-                label.classList.add('bar-label');
-                label.innerText = value;
-                bar.appendChild(label);
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = `${(value / maxVal) * 160 + 10}px`;
 
-                barContainer.appendChild(bar);
+                const gridBox = document.createElement('div');
+                gridBox.classList.add('grid-box');
+                gridBox.innerText = value;
+
+                // 正在比較的元素 (黃色 + 微上浮)
+                if (compareIndices.includes(index)) {
+                    bar.style.backgroundColor = 'var(--compare-color)';
+                    gridBox.style.backgroundColor = 'var(--compare-color)';
+                    gridBox.style.borderColor = 'var(--compare-color)';
+                    gridBox.style.color = '#000';
+                    wrapper.style.transform = 'translateY(-5px)';
+                } 
+                // 正在被覆蓋/寫入的元素 (綠色 + 明顯上浮)
+                else if (index === overwriteIndex) {
+                    bar.style.backgroundColor = 'var(--sorted-color)';
+                    gridBox.style.backgroundColor = 'var(--sorted-color)';
+                    gridBox.style.borderColor = 'var(--sorted-color)';
+                    gridBox.style.color = '#fff';
+                    wrapper.style.transform = 'translateY(-10px)';
+                }
+                // 整個排序結束時全綠
+                else if (activeRange[0] === -1) {
+                    bar.style.backgroundColor = 'var(--sorted-color)';
+                    gridBox.style.borderColor = 'var(--sorted-color)';
+                }
+
+                wrapper.appendChild(bar);
+                wrapper.appendChild(gridBox);
+                barContainer.appendChild(wrapper);
             });
         };
 
@@ -323,8 +405,9 @@
             const temp = [];
             let i = start, j = mid + 1;
 
+            // 比較兩個子陣列
             while (i <= mid && j <= end) {
-                steps.push({ type: 'compare', indices: [i, j] });
+                steps.push({ type: 'compare', indices: [i, j], range: [start, end] });
 
                 if (arr[i] <= arr[j]) {
                     temp.push(arr[i]);
@@ -338,9 +421,11 @@
             while (i <= mid) temp.push(arr[i++]);
             while (j <= end) temp.push(arr[j++]);
 
+            // 將暫存陣列寫回原陣列
             for (let k = 0; k < temp.length; k++) {
                 arr[start + k] = temp[k];
-                steps.push({ type: 'overwrite', index: start + k, value: temp[k] });
+                // 記錄寫入步驟
+                steps.push({ type: 'overwrite', index: start + k, value: temp[k], range: [start, end] });
             }
         };
 
@@ -351,37 +436,98 @@
         };
 
         const executeStep = () => {
-            if (currentStep >= steps.length) return;
+            if (currentStep >= steps.length) {
+                renderBars([-1, -1]); // 全部變綠
+                setButtonsState(false);
+                return;
+            }
 
             const step = steps[currentStep];
             if (step.type === 'compare') {
-                renderBars(step.indices);
+                // 傳入當前區間、比較中的兩個索引
+                renderBars(step.range, step.indices, -1);
             } else if (step.type === 'overwrite') {
+                // 實際覆蓋資料
                 data[step.index] = step.value;
-                renderBars([step.index]);
+                // 傳入當前區間、被覆蓋的索引
+                renderBars(step.range, [], step.index);
             }
 
             currentStep++;
         };
 
         const resetArray = () => {
-            data = Array.from({ length: 8 }, () => Math.floor(Math.random() * 100) + 1);
+            isSorting = false;
+            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 99) + 1);
             prepareSteps();
             renderBars();
+            setButtonsState(false);
+        };
+
+        const setButtonsState = (disabled) => {
+            startSortBtn.disabled = disabled;
+            nextStepBtn.disabled = disabled;
+            startCustomSortBtn.disabled = disabled;
         };
 
         startSortBtn.addEventListener('click', async () => {
-            while (currentStep < steps.length) {
+            if (currentStep >= steps.length) prepareSteps();
+            isSorting = true;
+            setButtonsState(true);
+            resetBtn.disabled = true;
+
+            while (currentStep < steps.length && isSorting) {
                 executeStep();
-                await new Promise(resolve => setTimeout(resolve, 500));
+                let delay = parseInt(speedSlider.value);
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
+            
+            resetBtn.disabled = false;
         });
 
         nextStepBtn.addEventListener('click', executeStep);
         resetBtn.addEventListener('click', resetArray);
 
+        startCustomSortBtn.addEventListener('click', () => {
+            const inputVal = customInput.value;
+            const arr = inputVal.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+            
+            if (arr.length > 0 && arr.length <= 20) {
+                data = arr;
+                prepareSteps();
+                renderBars();
+                setButtonsState(false);
+            } else {
+                alert('請輸入有效的數字格式，並以半形逗號分隔 (建議最多 20 個數字)。');
+            }
+        });
+
+        // 黑暗模式切換邏輯
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        let isDarkMode = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--background-color', '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', '#e6e6e6');
+                document.documentElement.style.setProperty('--card-bg-color', '#16213e');
+                document.documentElement.style.setProperty('--header-color', '#4ea8de');
+                document.documentElement.style.setProperty('--grid-border', '#4b5563');
+                themeIcon.innerText = '☀️';
+            } else {
+                document.documentElement.style.setProperty('--background-color', '#ecf0f1');
+                document.documentElement.style.setProperty('--text-color', '#2c3e50');
+                document.documentElement.style.setProperty('--card-bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--header-color', '#34495e');
+                document.documentElement.style.setProperty('--grid-border', '#95a5a6');
+                themeIcon.innerText = '🌙';
+            }
+        });
+
+        // 初始化
         resetArray();
     </script>
-
 </body>
 </html>
