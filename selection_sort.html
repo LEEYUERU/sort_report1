@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -8,9 +7,9 @@
     <style>
         :root {
             --bar-color: #3498db;
-            --compare-color: #f1c40f;
-            --swap-color: #e74c3c;
-            --sorted-color: #2ecc71;
+            --compare-color: #e74c3c; /* 掃描比較中 (紅色) */
+            --min-color: #9b59b6;     /* 目前找到的最小值 (紫色) */
+            --sorted-color: #2ecc71;  /* 已排序 (綠色) */
             --background-color: #ecf0f1;
             --text-color: #2c3e50;
             --header-color: #34495e;
@@ -19,23 +18,10 @@
             --shadow-color: rgba(0,0,0,0.1);
         }
 
-        body.dark-mode {
-            --bar-color: #3498db;
-            --compare-color: #f1c40f;
-            --swap-color: #e74c3c;
-            --sorted-color: #27ae60;
-            --background-color: #2c3e50;
-            --text-color: #ecf0f1;
-            --header-color: #ecf0f1;
-            --card-bg-color: #34495e;
-            --shadow-color: rgba(0,0,0,0.3);
-        }
-
         body {
             font-family: var(--font-family);
             background-color: var(--background-color);
             color: var(--text-color);
-            line-height: 1.6;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -91,26 +77,51 @@
         #bar-container {
             display: flex;
             align-items: flex-end;
+            justify-content: center;
             height: 250px;
             width: 100%;
             border-bottom: 2px solid #bdc3c7;
+            gap: 4px;
+            margin-bottom: 30px; 
         }
 
         .bar {
-            flex-grow: 1;
+            width: 30px;
             background-color: var(--bar-color);
-            margin: 0 2px;
-            transition: height 0.3s ease, background-color 0.3s ease;
+            transition: height 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
             position: relative;
+            border-radius: 4px 4px 0 0;
         }
         
         .bar-label {
             position: absolute;
-            bottom: -20px;
+            bottom: -25px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: bold;
             color: var(--text-color);
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            flex-wrap: wrap; 
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
         }
 
         .controls {
@@ -126,20 +137,14 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-            margin: 0 10px;
-            transition: background-color 0.3s ease, opacity 0.3s ease;
-        }
-        
-        body.dark-mode button {
-             background-color: var(--card-bg-color);
-             color: var(--text-color);
+            margin: 5px 10px;
+            transition: opacity 0.2s;
         }
 
-
-        button:hover:not(:disabled) {
+        button:hover {
             opacity: 0.8;
         }
-        
+
         button:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
@@ -153,7 +158,7 @@
             font-family: 'Courier New', Courier, monospace;
         }
         
-        ul {
+        ul, ol {
             padding-left: 20px;
         }
 
@@ -202,43 +207,30 @@
 
         .input-controls {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 15px;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 20px;
             background-color: var(--card-bg-color);
             border-radius: 8px;
             box-shadow: 0 4px 8px var(--shadow-color);
+            width: 100%;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .input-controls input[type="text"] {
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
-            min-width: 200px;
-        }
-
-        .input-controls label {
-            margin-left: 10px;
-        }
-
-        .bar-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            height: 300px;
-            margin: 20px 0;
-            border: 1px solid var(--header-color);
-            background-color: var(--card-bg-color);
-        }
-
-        .bar {
-            width: 30px;
-            margin: 0 2px;
-            background-color: var(--bar-color);
-            transition: height 0.3s, background-color 0.3s;
+            min-width: 250px;
         }
     </style>
 </head>
@@ -254,20 +246,25 @@
                 <h2>視覺化展示</h2>
                 <div class="visualization-area">
                     <div id="bar-container"></div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 已排序</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--compare-color);"></div> 掃描比較中</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--min-color);"></div> 當前最小值</div>
+                    </div>
                     <div class="controls">
-                        <button id="start-sort-btn">自動播放</button>
+                        <button id="start-sort-btn">開始排序</button>
                         <button id="next-step-btn">下一步</button>
-                        <button id="reset-btn">重設陣列</button>
+                        <button id="reset-btn">隨機產生</button>
                     </div>
                     <div class="input-controls">
-                        <div>
+                        <div class="input-row">
                             <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                            <button id="start-custom-sort-btn">開始排序自訂數字</button>
+                            <button id="start-custom-sort-btn">套用自訂數字</button>
                         </div>
-                        <div>
-                            <label for="speed-slider">速度:</label>
-                            <input type="range" id="speed-slider" min="50" max="1000" value="200">
-                            <span id="speed-value">200ms</span>
+                        <div class="input-row">
+                            <label for="speed-slider">播放速度:</label>
+                            <input type="range" id="speed-slider" min="50" max="1000" value="300" style="direction: rtl;">
+                            <span id="speed-value">300ms</span>
                         </div>
                     </div>
                 </div>
@@ -275,25 +272,25 @@
 
             <div class="card">
                 <h2>操作原理</h2>
-                <p>選擇排序法是一種簡單直觀的排序演算法。它的工作原理是：在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置，然後再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。以此類推，直到所有元素均排序完畢。</p>
+                <p>選擇排序法是一種簡單直觀的排序演算法。它的工作原理是：首先在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置，然後，再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。</p>
+                <p>以此類推，直到所有元素均排序完畢。這個過程就像是每次從剩下的牌中「選擇」出最小的一張，依序排好。</p>
             </div>
 
             <div class="card">
                 <h2>操作過程</h2>
                 <ol>
-                    <li>在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置。</li>
-                    <li>再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。</li>
-                    <li>重複第二步，直到所有元素均排序完畢。</li>
+                    <li><strong>設初始最小值：</strong> 將未排序區間的第一個元素預設為當前最小值。</li>
+                    <li><strong>尋找最小值：</strong> 往後掃描所有未排序的元素。如果發現比當前最小值還要小的元素，就更新「最小值」的標記位置。</li>
+                    <li><strong>交換位置：</strong> 掃描完畢後，將找到的最小值與未排序區間的第一個元素進行交換。</li>
+                    <li><strong>縮小範圍：</strong> 此時第一個元素已經排好序。將未排序區間往右縮小一格，重複步驟 1~3，直到整個陣列排序完成。</li>
                 </ol>
             </div>
 
             <div class="card">
                 <h2>複雜度分析</h2>
                 <ul>
-                    <li><strong>最差時間複雜度 (Worst Case):</strong> <code>O(n²)</code></li>
-                    <li><strong>最佳時間複雜度 (Best Case):</strong> <code>O(n²)</code></li>
-                    <li><strong>平均時間複雜度 (Average Case):</strong> <code>O(n²)</code></li>
-                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code></li>
+                    <li><strong>時間複雜度 (所有情況):</strong> <code>O(n<sup>2</sup>)</code><br>無論陣列一開始是不是已經排好序，選擇排序法都必須「掃描過剩下所有的元素」才能確定誰是最小值。因此最好、最壞、平均情況下的時間複雜度皆為 O(n<sup>2</sup>)，效率相對較低。</li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>是一種原地排序演算法，只需要額外的常數空間來暫存最小值索引和交換用的變數。</li>
                 </ul>
             </div>
         </main>
@@ -314,32 +311,38 @@
         const speedValue = document.getElementById('speed-value');
 
         let data = [];
-        const ARRAY_SIZE = 15;
-        let DELAY_MS = 200;
-
-        let originalData = []; // To store the initial state for reset
         let steps = [];
-        let currentStepIndex = 0;
+        let currentStep = 0;
         let isSorting = false;
-        let isPaused = true;
-        let sortingInterval = null;
 
-        // Render the bars based on the current array state
-        const renderBars = (highlightIndices = [], sortedRange = []) => {
+        // 渲染狀態變數
+        let sortedUpTo = -1;
+        let currentMinIndex = -1;
+        let compareIndex = -1;
+
+        speedSlider.addEventListener('input', (e) => {
+            speedValue.innerText = `${e.target.value}ms`;
+        });
+
+        const renderBars = () => {
             barContainer.innerHTML = '';
+            const maxVal = Math.max(...data, 1); 
+
             data.forEach((value, index) => {
                 const bar = document.createElement('div');
                 bar.classList.add('bar');
-                bar.style.height = `${(value / 100) * 250}px`; // Scale height to max 250px
+                bar.style.height = `${(value / maxVal) * 200 + 20}px`; 
 
-                if (highlightIndices.includes(index)) {
-                    bar.style.backgroundColor = 'var(--compare-color)';
-                } else if (sortedRange.includes(index)) {
+                // 顏色邏輯判定
+                if (index <= sortedUpTo) {
                     bar.style.backgroundColor = 'var(--sorted-color)';
-                } else {
-                    bar.style.backgroundColor = 'var(--bar-color)';
+                } else if (index === currentMinIndex) {
+                    bar.style.backgroundColor = 'var(--min-color)';
+                    bar.style.transform = 'translateY(-5px)'; // 稍微突出最小值
+                } else if (index === compareIndex) {
+                    bar.style.backgroundColor = 'var(--compare-color)';
                 }
-                
+
                 const label = document.createElement('span');
                 label.classList.add('bar-label');
                 label.innerText = value;
@@ -348,207 +351,152 @@
                 barContainer.appendChild(bar);
             });
         };
-        
-        const updateButtons = () => {
-            startSortBtn.innerText = isPaused ? "自動播放" : "暫停";
-
-            if (isSorting) {
-                resetBtn.disabled = true;
-                startCustomSortBtn.disabled = true;
-                customInput.disabled = true;
-                startSortBtn.disabled = false;
-                nextStepBtn.disabled = !isPaused;
-            } else { // Not sorting (either before start or after finish)
-                resetBtn.disabled = false;
-                startCustomSortBtn.disabled = false;
-                customInput.disabled = false;
-                startSortBtn.disabled = false;
-                nextStepBtn.disabled = false;
-                 // If sort is finished, disable step/pause buttons
-                if (currentStepIndex >= steps.length && steps.length > 0) {
-                    startSortBtn.disabled = true;
-                    nextStepBtn.disabled = true;
-                }
-            }
-        };
 
         const selectionSort = (arr) => {
-            const n = arr.length;
-            let currentArr = [...arr]; // Create a mutable copy for the sorting process
-            steps = []; // Clear previous steps
-
+            const tempArr = [...arr];
+            const n = tempArr.length;
+            
             for (let i = 0; i < n - 1; i++) {
-                let min_idx = i;
-                // Add step before inner loop starts
-                steps.push({ 
-                    type: 'start_pass', 
-                    currentData: [...currentArr], 
-                    highlight: [min_idx], 
-                    sortedRange: Array.from({ length: i }, (v, k) => k) 
-                });
+                let minIdx = i;
+                steps.push({ type: 'start_pass', index: i }); // 開始新的一輪，設定初始最小
 
                 for (let j = i + 1; j < n; j++) {
-                    steps.push({ 
-                        type: 'compare', 
-                        currentData: [...currentArr], 
-                        highlight: [min_idx, j], 
-                        sortedRange: Array.from({ length: i }, (v, k) => k) 
-                    });
-                    if (currentArr[j] < currentArr[min_idx]) {
-                        min_idx = j;
-                        steps.push({ 
-                            type: 'min_update', 
-                            currentData: [...currentArr], 
-                            highlight: [min_idx], 
-                            sortedRange: Array.from({ length: i }, (v, k) => k) 
-                        });
+                    steps.push({ type: 'compare', compareIdx: j, minIdx: minIdx });
+                    
+                    if (tempArr[j] < tempArr[minIdx]) {
+                        minIdx = j;
+                        steps.push({ type: 'new_min', minIdx: minIdx }); // 找到新的最小值
                     }
                 }
 
-                if (min_idx !== i) {
-                    // Perform swap
-                    [currentArr[i], currentArr[min_idx]] = [currentArr[min_idx], currentArr[i]];
-                    steps.push({ 
-                        type: 'swap', 
-                        currentData: [...currentArr], 
-                        highlight: [i, min_idx], 
-                        sortedRange: Array.from({ length: i }, (v, k) => k) 
-                    });
+                if (minIdx !== i) {
+                    // 交換資料
+                    let temp = tempArr[i];
+                    tempArr[i] = tempArr[minIdx];
+                    tempArr[minIdx] = temp;
+                    steps.push({ type: 'swap', idx1: i, idx2: minIdx, val1: tempArr[i], val2: tempArr[minIdx] });
                 }
-                // Mark current 'i' as sorted
-                steps.push({ 
-                    type: 'sorted', 
-                    currentData: [...currentArr], 
-                    highlight: [], 
-                    sortedRange: Array.from({ length: i + 1 }, (v, k) => k) 
-                });
+                
+                steps.push({ type: 'sorted', index: i }); // 標記為已排序
             }
-            // After the loop, the last element is also sorted
-            steps.push({ 
-                type: 'finished', 
-                currentData: [...currentArr], 
-                highlight: [], 
-                sortedRange: Array.from({ length: n }, (v, k) => k) 
-            });
+            steps.push({ type: 'sorted', index: n - 1 }); // 最後一個元素必然是最大的，直接標記排序完成
         };
 
-        const prepareSteps = (arr) => {
+        const prepareSteps = () => {
             steps = [];
-            originalData = [...arr]; // Store the initial configuration
-            selectionSort(arr); // Populate steps
-            currentStepIndex = 0;
-            data = [...originalData]; // Restore data to original for rendering initial state
-            isSorting = false;
-            isPaused = true;
-            clearInterval(sortingInterval);
+            selectionSort([...data]);
+            currentStep = 0;
+            sortedUpTo = -1;
+            currentMinIndex = -1;
+            compareIndex = -1;
         };
 
         const executeStep = () => {
-            if (currentStepIndex >= steps.length) {
-                isSorting = false;
-                isPaused = true;
-                clearInterval(sortingInterval);
-                renderBars([], Array.from({ length: data.length }, (v, k) => k)); // Mark all as sorted
-                updateButtons();
+            if (currentStep >= steps.length) {
+                sortedUpTo = data.length - 1;
+                currentMinIndex = -1;
+                compareIndex = -1;
+                renderBars();
+                setButtonsState(false);
                 return;
             }
 
-            const step = steps[currentStepIndex];
-            data = [...step.currentData]; // Restore data to the state of this step
+            const step = steps[currentStep];
 
-            renderBars(step.highlight, step.sortedRange);
-            currentStepIndex++;
-            updateButtons();
-        };
-        
-        const resetArray = (customArray = null) => {
-            clearInterval(sortingInterval);
-            if (customArray) {
-                data = customArray.map(Number);
-            } else {
-                data = Array.from({ length: ARRAY_SIZE }, () => Math.floor(Math.random() * 90) + 10);
+            if (step.type === 'start_pass') {
+                currentMinIndex = step.index;
+                compareIndex = -1;
+            } else if (step.type === 'compare') {
+                compareIndex = step.compareIdx;
+                currentMinIndex = step.minIdx;
+            } else if (step.type === 'new_min') {
+                currentMinIndex = step.minIdx;
+                compareIndex = -1; // 暫時取消掃描顏色以突顯新找到的最小值
+            } else if (step.type === 'swap') {
+                data[step.idx1] = step.val1;
+                data[step.idx2] = step.val2;
+                compareIndex = -1;
+            } else if (step.type === 'sorted') {
+                sortedUpTo = step.index;
+                currentMinIndex = -1;
+                compareIndex = -1;
             }
-            prepareSteps(data); // Prepare steps based on the new data
-            renderBars(); // Render initial state
-            updateButtons();
-        };
-        
-        const playPause = () => {
-            if (isPaused) {
-                isPaused = false;
-                if (currentStepIndex >= steps.length) { // If sorting is finished, re-prepare steps
-                    resetArray(originalData); // Reset and re-prepare with the original data
-                }
-                isSorting = true;
-                sortingInterval = setInterval(executeStep, DELAY_MS);
-            } else {
-                isPaused = true;
-                clearInterval(sortingInterval);
-            }
-            updateButtons();
+
+            renderBars();
+            currentStep++;
         };
 
-        // Event listeners
-        startSortBtn.addEventListener('click', playPause);
-        nextStepBtn.addEventListener('click', () => {
-            if (isPaused || !isSorting) { // Allow next step only when paused or before starting sort
-                isSorting = true; // Indicate that sorting has started
+        const resetArray = () => {
+            isSorting = false;
+            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 99) + 1);
+            prepareSteps();
+            renderBars();
+            setButtonsState(false);
+        };
+
+        const setButtonsState = (disabled) => {
+            startSortBtn.disabled = disabled;
+            nextStepBtn.disabled = disabled;
+            startCustomSortBtn.disabled = disabled;
+        };
+
+        startSortBtn.addEventListener('click', async () => {
+            if (currentStep >= steps.length) prepareSteps();
+            isSorting = true;
+            setButtonsState(true);
+            resetBtn.disabled = true;
+
+            while (currentStep < steps.length && isSorting) {
                 executeStep();
+                let delay = parseInt(speedSlider.value);
+                await new Promise(resolve => setTimeout(resolve, delay));
             }
-        });
-        resetBtn.addEventListener('click', () => resetArray());
-        startCustomSortBtn.addEventListener('click', () => {
-            const input = customInput.value;
-            if (input.trim() === '') {
-                alert('請輸入數字！');
-                return;
-            }
-            const customArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0 && n <= 100);
-
-            if (customArray.length === 0) {
-                alert('請輸入有效的數字 (1-100)，並用逗號分隔。');
-                return;
-            }
-            resetArray(customArray);
-        });
-        speedSlider.addEventListener('input', (e) => {
-            DELAY_MS = parseInt(e.target.value);
-            speedValue.innerText = `${DELAY_MS}ms`;
-            if (!isPaused) {
-                clearInterval(sortingInterval);
-                sortingInterval = setInterval(executeStep, DELAY_MS);
-            }
-        });
-
-        // Initial setup
-        document.addEventListener('DOMContentLoaded', () => {
-            resetArray();
             
-            // Theme toggle logic
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeIcon = document.getElementById('theme-icon');
-            const currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme) {
-                document.body.classList.add(currentTheme);
-                if (currentTheme === 'dark-mode') {
-                    themeIcon.innerText = '☀️';
-                }
-            }
-
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-mode');
-                let theme = '';
-                if (document.body.classList.contains('dark-mode')) {
-                    themeIcon.innerText = '☀️';
-                    theme = 'dark-mode';
-                } else {
-                    themeIcon.innerText = '🌙';
-                }
-                localStorage.setItem('theme', theme);
-            });
+            resetBtn.disabled = false;
         });
 
+        nextStepBtn.addEventListener('click', executeStep);
+        
+        resetBtn.addEventListener('click', resetArray);
+
+        startCustomSortBtn.addEventListener('click', () => {
+            const inputVal = customInput.value;
+            const arr = inputVal.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+            
+            if (arr.length > 0 && arr.length <= 20) {
+                data = arr;
+                prepareSteps();
+                renderBars();
+                setButtonsState(false);
+            } else {
+                alert('請輸入有效的數字格式，並以半形逗號分隔 (建議最多 20 個數字)。');
+            }
+        });
+
+        // 暗黑模式切換
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        let isDarkMode = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--background-color', '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', '#e6e6e6');
+                document.documentElement.style.setProperty('--card-bg-color', '#16213e');
+                document.documentElement.style.setProperty('--header-color', '#4ea8de');
+                themeIcon.innerText = '☀️';
+            } else {
+                document.documentElement.style.setProperty('--background-color', '#ecf0f1');
+                document.documentElement.style.setProperty('--text-color', '#2c3e50');
+                document.documentElement.style.setProperty('--card-bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--header-color', '#34495e');
+                themeIcon.innerText = '🌙';
+            }
+        });
+
+        // 初始化
+        resetArray();
     </script>
 </body>
 </html>
