@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>選擇排序法 (Selection Sort) 視覺化工具</title>
+    <title>泡泡排序法 (Bubble Sort) 視覺化工具</title>
     <style>
         :root {
             --bar-color: #3498db;
@@ -20,10 +19,6 @@
         }
 
         body.dark-mode {
-            --bar-color: #3498db;
-            --compare-color: #f1c40f;
-            --swap-color: #e74c3c;
-            --sorted-color: #27ae60;
             --background-color: #2c3e50;
             --text-color: #ecf0f1;
             --header-color: #ecf0f1;
@@ -35,7 +30,6 @@
             font-family: var(--font-family);
             background-color: var(--background-color);
             color: var(--text-color);
-            line-height: 1.6;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -129,17 +123,11 @@
             margin: 0 10px;
             transition: background-color 0.3s ease, opacity 0.3s ease;
         }
-        
-        body.dark-mode button {
-             background-color: var(--card-bg-color);
-             color: var(--text-color);
-        }
-
 
         button:hover:not(:disabled) {
             opacity: 0.8;
         }
-        
+
         button:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
@@ -223,30 +211,13 @@
         .input-controls label {
             margin-left: 10px;
         }
-
-        .bar-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            height: 300px;
-            margin: 20px 0;
-            border: 1px solid var(--header-color);
-            background-color: var(--card-bg-color);
-        }
-
-        .bar {
-            width: 30px;
-            margin: 0 2px;
-            background-color: var(--bar-color);
-            transition: height 0.3s, background-color 0.3s;
-        }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-home">← 回首頁</a>
     <div class="container">
         <header>
-            <h1>選擇排序法 (Selection Sort) 視覺化工具</h1>
+            <h1>泡泡排序法 (Bubble Sort) 視覺化工具</h1>
         </header>
 
         <main>
@@ -275,25 +246,26 @@
 
             <div class="card">
                 <h2>操作原理</h2>
-                <p>選擇排序法是一種簡單直觀的排序演算法。它的工作原理是：在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置，然後再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。以此類推，直到所有元素均排序完畢。</p>
+                <p>泡泡排序法是一種簡單的排序演算法。它重複地走訪過要排序的數列，一次比較兩個元素，如果他們的順序錯誤就把他們交換過來。走訪數列的工作是重複地進行直到沒有再需要交換，也就是說該數列已經排序完成。</p>
             </div>
 
             <div class="card">
                 <h2>操作過程</h2>
                 <ol>
-                    <li>在未排序序列中找到最小（或最大）元素，存放到排序序列的起始位置。</li>
-                    <li>再從剩餘未排序元素中繼續尋找最小（或最大）元素，然後放到已排序序列的末尾。</li>
-                    <li>重複第二步，直到所有元素均排序完畢。</li>
+                    <li>比較相鄰的元素。如果第一個比第二個大，就交換他們兩個。</li>
+                    <li>對每一對相鄰元素作同樣的工作，從開始第一對到結尾的最後一對。這步做完後，最後的元素會是最大的數。</li>
+                    <li>針對所有的元素重複以上的步驟，除了最後一個。</li>
+                    <li>持續每次對越來越少的元素重複上面的步驟，直到沒有任何一對數字需要比較。</li>
                 </ol>
             </div>
 
             <div class="card">
                 <h2>複雜度分析</h2>
                 <ul>
-                    <li><strong>最差時間複雜度 (Worst Case):</strong> <code>O(n²)</code></li>
-                    <li><strong>最佳時間複雜度 (Best Case):</strong> <code>O(n²)</code></li>
-                    <li><strong>平均時間複雜度 (Average Case):</strong> <code>O(n²)</code></li>
-                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code></li>
+                    <li><strong>最差時間複雜度:</strong> <code>O(n²)</code></li>
+                    <li><strong>最佳時間複雜度:</strong> <code>O(n)</code> (當輸入陣列已排序)</li>
+                    <li><strong>平均時間複雜度:</strong> <code>O(n²)</code></li>
+                    <li><strong>空間複雜度:</strong> <code>O(1)</code></li>
                 </ul>
             </div>
         </main>
@@ -317,54 +289,50 @@
         const ARRAY_SIZE = 15;
         let DELAY_MS = 200;
 
-        let originalData = []; // To store the initial state for reset
+        let originalData = [];
         let steps = [];
         let currentStepIndex = 0;
         let isSorting = false;
         let isPaused = true;
         let sortingInterval = null;
 
-        // Render the bars based on the current array state
-        const renderBars = (highlightIndices = [], sortedRange = []) => {
+        const renderBars = (highlightIndices = [], sortedIndex = -1) => {
             barContainer.innerHTML = '';
             data.forEach((value, index) => {
                 const bar = document.createElement('div');
                 bar.classList.add('bar');
-                bar.style.height = `${(value / 100) * 250}px`; // Scale height to max 250px
+                bar.style.height = `${(value / 100) * 250}px`;
 
                 if (highlightIndices.includes(index)) {
                     bar.style.backgroundColor = 'var(--compare-color)';
-                } else if (sortedRange.includes(index)) {
+                } else if (sortedIndex !== -1 && index >= sortedIndex) {
                     bar.style.backgroundColor = 'var(--sorted-color)';
                 } else {
                     bar.style.backgroundColor = 'var(--bar-color)';
                 }
-                
+
                 const label = document.createElement('span');
                 label.classList.add('bar-label');
                 label.innerText = value;
                 bar.appendChild(label);
-
                 barContainer.appendChild(bar);
             });
         };
-        
+
         const updateButtons = () => {
             startSortBtn.innerText = isPaused ? "自動播放" : "暫停";
-
             if (isSorting) {
                 resetBtn.disabled = true;
                 startCustomSortBtn.disabled = true;
                 customInput.disabled = true;
                 startSortBtn.disabled = false;
                 nextStepBtn.disabled = !isPaused;
-            } else { // Not sorting (either before start or after finish)
+            } else {
                 resetBtn.disabled = false;
                 startCustomSortBtn.disabled = false;
                 customInput.disabled = false;
                 startSortBtn.disabled = false;
                 nextStepBtn.disabled = false;
-                 // If sort is finished, disable step/pause buttons
                 if (currentStepIndex >= steps.length && steps.length > 0) {
                     startSortBtn.disabled = true;
                     nextStepBtn.disabled = true;
@@ -372,72 +340,29 @@
             }
         };
 
-        const selectionSort = (arr) => {
+        const bubbleSort = (arr) => {
             const n = arr.length;
-            let currentArr = [...arr]; // Create a mutable copy for the sorting process
-            steps = []; // Clear previous steps
-
-            for (let i = 0; i < n - 1; i++) {
-                let min_idx = i;
-                // Add step before inner loop starts
-                steps.push({ 
-                    type: 'start_pass', 
-                    currentData: [...currentArr], 
-                    highlight: [min_idx], 
-                    sortedRange: Array.from({ length: i }, (v, k) => k) 
-                });
-
-                for (let j = i + 1; j < n; j++) {
-                    steps.push({ 
-                        type: 'compare', 
-                        currentData: [...currentArr], 
-                        highlight: [min_idx, j], 
-                        sortedRange: Array.from({ length: i }, (v, k) => k) 
-                    });
-                    if (currentArr[j] < currentArr[min_idx]) {
-                        min_idx = j;
-                        steps.push({ 
-                            type: 'min_update', 
-                            currentData: [...currentArr], 
-                            highlight: [min_idx], 
-                            sortedRange: Array.from({ length: i }, (v, k) => k) 
-                        });
+            let currentArr = [...arr];
+            steps = [];
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    steps.push({ type: 'compare', indices: [j, j + 1], currentData: [...currentArr], sortedIndex: n - i });
+                    if (currentArr[j] > currentArr[j + 1]) {
+                        [currentArr[j], currentArr[j + 1]] = [currentArr[j + 1], currentArr[j]];
+                        steps.push({ type: 'swap', indices: [j, j + 1], currentData: [...currentArr], sortedIndex: n - i });
                     }
                 }
-
-                if (min_idx !== i) {
-                    // Perform swap
-                    [currentArr[i], currentArr[min_idx]] = [currentArr[min_idx], currentArr[i]];
-                    steps.push({ 
-                        type: 'swap', 
-                        currentData: [...currentArr], 
-                        highlight: [i, min_idx], 
-                        sortedRange: Array.from({ length: i }, (v, k) => k) 
-                    });
-                }
-                // Mark current 'i' as sorted
-                steps.push({ 
-                    type: 'sorted', 
-                    currentData: [...currentArr], 
-                    highlight: [], 
-                    sortedRange: Array.from({ length: i + 1 }, (v, k) => k) 
-                });
+                steps.push({ type: 'sorted', indices: [], currentData: [...currentArr], sortedIndex: n - i - 1 });
             }
-            // After the loop, the last element is also sorted
-            steps.push({ 
-                type: 'finished', 
-                currentData: [...currentArr], 
-                highlight: [], 
-                sortedRange: Array.from({ length: n }, (v, k) => k) 
-            });
+            steps.push({ type: 'finished', indices: [], currentData: [...currentArr], sortedIndex: 0 });
         };
 
         const prepareSteps = (arr) => {
             steps = [];
-            originalData = [...arr]; // Store the initial configuration
-            selectionSort(arr); // Populate steps
+            originalData = [...arr];
+            bubbleSort([...arr]);
             currentStepIndex = 0;
-            data = [...originalData]; // Restore data to original for rendering initial state
+            data = [...originalData];
             isSorting = false;
             isPaused = true;
             clearInterval(sortingInterval);
@@ -448,19 +373,17 @@
                 isSorting = false;
                 isPaused = true;
                 clearInterval(sortingInterval);
-                renderBars([], Array.from({ length: data.length }, (v, k) => k)); // Mark all as sorted
+                renderBars([], 0);
                 updateButtons();
                 return;
             }
-
             const step = steps[currentStepIndex];
-            data = [...step.currentData]; // Restore data to the state of this step
-
-            renderBars(step.highlight, step.sortedRange);
+            data = [...step.currentData];
+            renderBars(step.indices, step.sortedIndex);
             currentStepIndex++;
             updateButtons();
         };
-        
+
         const resetArray = (customArray = null) => {
             clearInterval(sortingInterval);
             if (customArray) {
@@ -468,17 +391,15 @@
             } else {
                 data = Array.from({ length: ARRAY_SIZE }, () => Math.floor(Math.random() * 90) + 10);
             }
-            prepareSteps(data); // Prepare steps based on the new data
-            renderBars(); // Render initial state
+            prepareSteps(data);
+            renderBars();
             updateButtons();
         };
-        
+
         const playPause = () => {
             if (isPaused) {
                 isPaused = false;
-                if (currentStepIndex >= steps.length) { // If sorting is finished, re-prepare steps
-                    resetArray(originalData); // Reset and re-prepare with the original data
-                }
+                if (currentStepIndex >= steps.length) resetArray(originalData);
                 isSorting = true;
                 sortingInterval = setInterval(executeStep, DELAY_MS);
             } else {
@@ -488,67 +409,31 @@
             updateButtons();
         };
 
-        // Event listeners
         startSortBtn.addEventListener('click', playPause);
-        nextStepBtn.addEventListener('click', () => {
-            if (isPaused || !isSorting) { // Allow next step only when paused or before starting sort
-                isSorting = true; // Indicate that sorting has started
-                executeStep();
-            }
-        });
+        nextStepBtn.addEventListener('click', () => { if (isPaused || !isSorting) { isSorting = true; executeStep(); } });
         resetBtn.addEventListener('click', () => resetArray());
         startCustomSortBtn.addEventListener('click', () => {
             const input = customInput.value;
-            if (input.trim() === '') {
-                alert('請輸入數字！');
-                return;
-            }
+            if (input.trim() === '') return alert('請輸入數字！');
             const customArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0 && n <= 100);
-
-            if (customArray.length === 0) {
-                alert('請輸入有效的數字 (1-100)，並用逗號分隔。');
-                return;
-            }
+            if (customArray.length === 0) return alert('請輸入有效數字 (1-100)！');
             resetArray(customArray);
         });
         speedSlider.addEventListener('input', (e) => {
             DELAY_MS = parseInt(e.target.value);
             speedValue.innerText = `${DELAY_MS}ms`;
-            if (!isPaused) {
-                clearInterval(sortingInterval);
-                sortingInterval = setInterval(executeStep, DELAY_MS);
-            }
+            if (!isPaused) { clearInterval(sortingInterval); sortingInterval = setInterval(executeStep, DELAY_MS); }
         });
 
-        // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
             resetArray();
-            
-            // Theme toggle logic
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
-            const currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme) {
-                document.body.classList.add(currentTheme);
-                if (currentTheme === 'dark-mode') {
-                    themeIcon.innerText = '☀️';
-                }
-            }
-
             themeToggle.addEventListener('click', () => {
                 document.body.classList.toggle('dark-mode');
-                let theme = '';
-                if (document.body.classList.contains('dark-mode')) {
-                    themeIcon.innerText = '☀️';
-                    theme = 'dark-mode';
-                } else {
-                    themeIcon.innerText = '🌙';
-                }
-                localStorage.setItem('theme', theme);
+                themeIcon.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
             });
         });
-
     </script>
 </body>
 </html>
