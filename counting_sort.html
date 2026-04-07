@@ -40,29 +40,8 @@
             color: var(--header-color);
         }
 
-        h1, h2 {
-            font-weight: 300;
-        }
-
         h1 {
             font-size: 2.5rem;
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            color: var(--header-color);
-            border-bottom: 2px solid var(--bar-color);
-            padding-bottom: 10px;
-            margin-top: 40px;
-        }
-        
-        .card {
-            background: var(--card-bg-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px var(--shadow-color);
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: background-color 0.3s;
         }
 
         .visualization-area {
@@ -88,7 +67,7 @@
             transition: height 0.3s ease, background-color 0.3s ease;
             position: relative;
         }
-        
+
         .bar-label {
             position: absolute;
             bottom: -20px;
@@ -123,101 +102,6 @@
             cursor: not-allowed;
             opacity: 0.5;
         }
-
-        code {
-            background-color: rgba(0,0,0,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        
-        ul {
-            padding-left: 20px;
-        }
-
-        #theme-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background-color: var(--card-bg-color);
-            color: var(--text-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            transition: background-color 0.3s, color 0.3s, transform 0.2s;
-        }
-
-        #theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        .back-home {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            text-decoration: none;
-            color: var(--text-color);
-            background-color: var(--card-bg-color);
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .back-home:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px var(--shadow-color);
-        }
-
-        .input-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-            padding: 15px;
-            background-color: var(--card-bg-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px var(--shadow-color);
-        }
-
-        .input-controls input[type="text"] {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            min-width: 200px;
-        }
-
-        .input-controls label {
-            margin-left: 10px;
-        }
-
-        .bar-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            height: 300px;
-            margin: 20px 0;
-            border: 1px solid var(--header-color);
-            background-color: var(--card-bg-color);
-        }
-
-        .bar {
-            width: 30px;
-            margin: 0 2px;
-            background-color: var(--bar-color);
-            transition: height 0.3s, background-color 0.3s;
-        }
     </style>
 </head>
 <body>
@@ -234,68 +118,28 @@
                     <div id="bar-container"></div>
                     <div class="controls">
                         <button id="start-sort-btn">開始排序</button>
-                        <button id="next-step-btn">下一步</button>
                         <button id="reset-btn">重設陣列</button>
-                    </div>
-                    <div class="input-controls">
-                        <input type="text" id="custom-input" placeholder="輸入數字,用逗號分隔(e.g. 5,3,8,1)">
-                        <button id="start-custom-sort-btn">開始排序自訂數字</button>
                     </div>
                 </div>
             </div>
-
-            <div class="card">
-                <h2>操作原理</h2>
-                <p>計數排序法不是一個基於比較的排序演算法。它利用一個額外的「計數陣列」，來計算原始陣列中每個元素出現的次數。然後，根據計數陣列的資訊，直接將元素放回其正確的排序位置。</p>
-                <p>此演算法的效率非常高，但它有一個限制：它只適用於資料範圍（最大值和最小值之差）不大的整數排序。</p>
-            </div>
-
-            <div class="card">
-                <h2>操作過程</h2>
-                <ol>
-                    <li>找出待排序陣列中的最大值 <code>max</code> 和最小值 <code>min</code>。</li>
-                    <li>建立一個大小為 <code>max - min + 1</code> 的計數陣列 <code>countArray</code>，並將所有元素初始化為 0。</li>
-                    <li>遍歷原始陣列，對於每個元素 <code>num</code>，將 <code>countArray[num - min]</code> 的值加 1。</li>
-                    <li>修改計數陣列，使其每個元素都包含前面所有元素的總和。這樣 <code>countArray[i]</code> 就代表了不大於 <code>i + min</code> 的元素個數。</li>
-                    <li>建立一個與原始陣列大小相同的結果陣列 <code>resultArray</code>。</li>
-                    <li>反向遍歷原始陣列，對於每個元素 <code>num</code>，將其放入 <code>resultArray</code> 的 <code>countArray[num - min] - 1</code> 位置，然後將 <code>countArray[num - min]</code> 的值減 1。</li>
-                    <li>最後，將排序好的 <code>resultArray</code> 複製回原始陣列。</li>
-                </ol>
-            </div>
-
-            <div class="card">
-                <h2>複雜度分析</h2>
-                <ul>
-                    <li><strong>時間複雜度:</strong> <code>O(n + k)</code><br>其中 n 是陣列的長度，k 是資料的範圍 (最大值 - 最小值)。它只需要幾個線性的遍歷。</li>
-                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(k)</code><br>需要一個大小為 k 的額外計數陣列。</li>
-                </ul>
-            </div>
         </main>
-    </div>
-
-    <div id="theme-toggle" title="切換主題">
-        <span id="theme-icon">🌙</span>
     </div>
 
     <script>
         const barContainer = document.getElementById('bar-container');
         const startSortBtn = document.getElementById('start-sort-btn');
-        const nextStepBtn = document.getElementById('next-step-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const customInput = document.getElementById('custom-input');
-        const startCustomSortBtn = document.getElementById('start-custom-sort-btn');
 
-        let data = [5, 3, 8, 6, 2, 7, 4, 1];
-        let counts = [];
-        let stepIndex = 0;
-        let sortedIndex = 0;
+        let data = [4, 2, 2, 8, 3, 3, 1];
+        let steps = [];
+        let currentStep = 0;
 
         const renderBars = (highlightIndices = []) => {
             barContainer.innerHTML = '';
             data.forEach((value, index) => {
                 const bar = document.createElement('div');
                 bar.classList.add('bar');
-                bar.style.height = `${value * 30}px`;
+                bar.style.height = `${value * 20}px`;
 
                 if (highlightIndices.includes(index)) {
                     bar.style.backgroundColor = 'var(--compare-color)';
@@ -310,63 +154,44 @@
             });
         };
 
+        const countingSort = () => {
+            const max = Math.max(...data);
+            const count = Array(max + 1).fill(0);
+            const output = Array(data.length).fill(0);
+
+            // 計數每個元素的出現次數
+            data.forEach(value => {
+                count[value]++;
+            });
+
+            // 累加計數
+            for (let i = 1; i < count.length; i++) {
+                count[i] += count[i - 1];
+            }
+
+            // 排序
+            for (let i = data.length - 1; i >= 0; i--) {
+                const value = data[i];
+                output[count[value] - 1] = value;
+                count[value]--;
+            }
+
+            data = output;
+        };
+
         const resetArray = () => {
             data = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10) + 1);
-            counts = new Array(Math.max(...data) + 1).fill(0);
-            stepIndex = 0;
-            sortedIndex = 0;
             renderBars();
         };
 
-        const countingSortStep = () => {
-            if (stepIndex < data.length) {
-                counts[data[stepIndex]]++;
-                renderBars([stepIndex]);
-                stepIndex++;
-            } else if (sortedIndex < data.length) {
-                for (let i = 0; i < counts.length; i++) {
-                    while (counts[i] > 0) {
-                        data[sortedIndex] = i;
-                        renderBars([sortedIndex]);
-                        sortedIndex++;
-                        counts[i]--;
-                        return;
-                    }
-                }
-            }
-        };
-
-        const startCustomSort = () => {
-            const input = customInput.value;
-            if (input.trim() === '') {
-                alert('請輸入數字！');
-                return;
-            }
-            const customArray = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
-            if (customArray.length === 0) {
-                alert('請輸入有效的數字！');
-                return;
-            }
-            data = customArray;
-            counts = new Array(Math.max(...data) + 1).fill(0);
-            stepIndex = 0;
-            sortedIndex = 0;
+        startSortBtn.addEventListener('click', () => {
+            countingSort();
             renderBars();
-        };
-
-        startSortBtn.addEventListener('click', async () => {
-            while (stepIndex < data.length || sortedIndex < data.length) {
-                countingSortStep();
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
         });
 
-        nextStepBtn.addEventListener('click', countingSortStep);
         resetBtn.addEventListener('click', resetArray);
-        startCustomSortBtn.addEventListener('click', startCustomSort);
 
         resetArray();
     </script>
-
 </body>
 </html>
