@@ -206,7 +206,6 @@
         .kw { color: #c678dd; } /* 紫色關鍵字 */
         .fn { color: #61afef; } /* 藍色函數名 */
         .cm { color: #6b7280; font-style: italic; } /* 灰色註解 */
-        .bl { color: #56b6c2; } /* 青色布林值 */
 
         #theme-toggle {
             position: fixed;
@@ -317,7 +316,7 @@
                 </div>
             </div>
 
-            <!-- 新增的偽代碼區塊 -->
+            <!-- 偽代碼區塊 -->
             <div class="card">
                 <h2>演算法偽代碼</h2>
                 <div class="code-container" id="pseudocode">
@@ -347,6 +346,16 @@
                     <li><strong>重複步驟：</strong> 忽略已經排好序的最後一個元素，對剩下的元素重複步驟 1 和 2。</li>
                     <li><strong>完成排序：</strong> 每進行一輪，需要比較的元素就少一個，直到所有元素都排序完畢。</li>
                 </ol>
+            </div>
+
+            <!-- 被吃掉的複雜度分析回來了！ -->
+            <div class="card">
+                <h2>複雜度分析</h2>
+                <ul>
+                    <li><strong>時間複雜度 (最佳情況):</strong> <code>O(n)</code><br>當陣列已經是排序好的狀態時，氣泡排序只需進行一次走訪，發現沒有元素需要交換即可提早結束。</li>
+                    <li><strong>時間複雜度 (平均/最壞情況):</strong> <code>O(n<sup>2</sup>)</code><br>當陣列是反序時，需要進行完整的 n 輪比較，每輪進行 n-i 次交換，因此效率較低。</li>
+                    <li><strong>空間複雜度 (Space Complexity):</strong> <code>O(1)</code><br>氣泡排序是一種「原地排序 (In-place Sort)」，只需要一個額外的空間來暫存變數以進行交換，不需要額外的陣列配置。</li>
+                </ul>
             </div>
 
         </main>
@@ -402,9 +411,7 @@
 
         // 處理偽代碼高亮邏輯
         const highlightCodeLine = (lineNum) => {
-            // 先清除所有高亮
             document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
-            // 加上新的高亮
             if (lineNum !== null) {
                 const targetLine = document.getElementById(`line-${lineNum}`);
                 if (targetLine) targetLine.classList.add('active');
