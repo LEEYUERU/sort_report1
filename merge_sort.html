@@ -55,6 +55,18 @@
             border-bottom: 2px solid var(--bar-color);
             padding-bottom: 10px;
             margin-top: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--bar-color);
+            margin-right: 10px;
+            border-radius: 3px;
         }
         
         .card {
@@ -85,7 +97,6 @@
             padding-bottom: 10px;
         }
 
-        /* 包裝長條圖與底部格子的容器 */
         .bar-wrapper {
             display: flex;
             flex-direction: column;
@@ -172,16 +183,48 @@
             opacity: 0.5;
         }
 
-        code {
-            background-color: rgba(0,0,0,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        
         ul, ol {
             padding-left: 20px;
         }
+
+        /* 偽代碼區塊樣式 */
+        .code-container {
+            background-color: #111827; 
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #e5e7eb;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .code-line {
+            display: flex;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            white-space: pre;
+        }
+
+        .code-line.active {
+            background-color: rgba(52, 152, 219, 0.4); 
+            border-left: 3px solid #3498db;
+        }
+
+        .line-num {
+            color: #6b7280;
+            width: 30px;
+            flex-shrink: 0;
+            text-align: right;
+            margin-right: 15px;
+            user-select: none;
+        }
+
+        .kw { color: #c678dd; } 
+        .fn { color: #61afef; } 
+        .cm { color: #6b7280; font-style: italic; } 
 
         #theme-toggle {
             position: fixed;
@@ -293,6 +336,29 @@
                 </div>
             </div>
 
+            <!-- 新增的偽代碼區塊 -->
+            <div class="card">
+                <h2>演算法偽代碼</h2>
+                <div class="code-container" id="pseudocode">
+                    <div class="code-line" id="line-0"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">mergeSort</span>(arr, start, end):</div>
+                    <div class="code-line" id="line-1"><span class="line-num">1</span>  <span class="kw">if</span> start >= end: <span class="kw">return</span></div>
+                    <div class="code-line" id="line-2"><span class="line-num">2</span>  mid = floor((start + end) / 2)</div>
+                    <div class="code-line" id="line-3"><span class="line-num">3</span>  mergeSort(arr, start, mid) <span class="cm">// 分割左半邊</span></div>
+                    <div class="code-line" id="line-4"><span class="line-num">4</span>  mergeSort(arr, mid + 1, end) <span class="cm">// 分割右半邊</span></div>
+                    <div class="code-line" id="line-5"><span class="line-num">5</span>  merge(arr, start, mid, end) <span class="cm">// 將兩邊合併</span></div>
+                    <div class="code-line" id="line-6"><span class="line-num"> </span></div>
+                    <div class="code-line" id="line-7"><span class="line-num"> </span><span class="kw">function</span> <span class="fn">merge</span>(arr, start, mid, end):</div>
+                    <div class="code-line" id="line-8"><span class="line-num">6</span>  <span class="kw">while</span> left &lt;= mid <span class="kw">and</span> right &lt;= end:</div>
+                    <div class="code-line" id="line-9"><span class="line-num">7</span>    <span class="kw">if</span> arr[left] &lt;= arr[right]: <span class="cm">// 比較兩邊最小元素</span></div>
+                    <div class="code-line" id="line-10"><span class="line-num">8</span>      temp.push(arr[left])</div>
+                    <div class="code-line" id="line-11"><span class="line-num">9</span>    <span class="kw">else</span>:</div>
+                    <div class="code-line" id="line-12"><span class="line-num">10</span>     temp.push(arr[right])</div>
+                    <div class="code-line" id="line-13"><span class="line-num">11</span> <span class="cm">// ...將剩餘元素放入 temp 陣列中...</span></div>
+                    <div class="code-line" id="line-14"><span class="line-num">12</span> <span class="kw">for</span> k = 0 <span class="kw">to</span> temp.length - 1:</div>
+                    <div class="code-line" id="line-15"><span class="line-num">13</span>   arr[start + k] = temp[k] <span class="cm">// 將排好序的 temp 寫回原陣列</span></div>
+                </div>
+            </div>
+
             <div class="card">
                 <h2>操作原理</h2>
                 <p>合併排序法是一種高效的、基於分治法 (Divide and Conquer) 的排序演算法。它將一個大問題分解成數個小問題來解決，然後再將小問題的解合併起來，得到原問題的解。</p>
@@ -332,7 +398,7 @@
         const speedSlider = document.getElementById('speed-slider');
         const speedValue = document.getElementById('speed-value');
 
-        let data = [38, 27, 43, 3, 9, 82, 10];
+        let data = [];
         let steps = [];
         let currentStep = 0;
         let isSorting = false;
@@ -392,6 +458,15 @@
             });
         };
 
+        // 處理偽代碼高亮邏輯
+        const highlightCodeLine = (lineNum) => {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+            if (lineNum !== null) {
+                const targetLine = document.getElementById(`line-${lineNum}`);
+                if (targetLine) targetLine.classList.add('active');
+            }
+        };
+
         const mergeSort = (arr, start, end) => {
             if (start >= end) return;
 
@@ -407,7 +482,8 @@
 
             // 比較兩個子陣列
             while (i <= mid && j <= end) {
-                steps.push({ type: 'compare', indices: [i, j], range: [start, end] });
+                // line: 9 對應偽代碼的 if 比較
+                steps.push({ type: 'compare', indices: [i, j], range: [start, end], line: 9 });
 
                 if (arr[i] <= arr[j]) {
                     temp.push(arr[i]);
@@ -424,8 +500,8 @@
             // 將暫存陣列寫回原陣列
             for (let k = 0; k < temp.length; k++) {
                 arr[start + k] = temp[k];
-                // 記錄寫入步驟
-                steps.push({ type: 'overwrite', index: start + k, value: temp[k], range: [start, end] });
+                // line: 15 對應偽代碼的 寫回陣列
+                steps.push({ type: 'overwrite', index: start + k, value: temp[k], range: [start, end], line: 15 });
             }
         };
 
@@ -433,23 +509,27 @@
             steps = [];
             mergeSort([...data], 0, data.length - 1);
             currentStep = 0;
+            highlightCodeLine(null);
         };
 
         const executeStep = () => {
             if (currentStep >= steps.length) {
                 renderBars([-1, -1]); // 全部變綠
                 setButtonsState(false);
+                highlightCodeLine(null);
                 return;
             }
 
             const step = steps[currentStep];
+
+            if (step.line !== undefined) {
+                highlightCodeLine(step.line);
+            }
+
             if (step.type === 'compare') {
-                // 傳入當前區間、比較中的兩個索引
                 renderBars(step.range, step.indices, -1);
             } else if (step.type === 'overwrite') {
-                // 實際覆蓋資料
                 data[step.index] = step.value;
-                // 傳入當前區間、被覆蓋的索引
                 renderBars(step.range, [], step.index);
             }
 
@@ -483,6 +563,7 @@
             }
             
             resetBtn.disabled = false;
+            highlightCodeLine(null);
         });
 
         nextStepBtn.addEventListener('click', executeStep);
