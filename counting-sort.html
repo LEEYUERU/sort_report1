@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計數排序法 (Counting Sort) 視覺化工具</title>
+    <style>
+        :root {
+            --bar-color: #3498db;
+            --read-color: #e74c3c;    /* 讀取/計算中 (紅色) */
+            --write-color: #9b59b6;   /* 寫回陣列中 (紫色) */
+            --sorted-color: #2ecc71;  /* 已排序 (綠色) */
+            --count-box-bg: #fff;
+            --count-box-border: #bdc3c7;
+            --background-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --header-color: #34495e;
+            --card-bg-color: #ffffff;
+            --font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--header-color);
+        }
+
+        h1, h2 {
+            font-weight: 300;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--header-color);
+            border-bottom: 2px solid var(--bar-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .visualization-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+
+        /* 原始陣列長條圖 */
+        #bar-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 200px;
+            width: 100%;
+            border-bottom: 2px solid #bdc3c7;
+            gap: 6px;
+            margin-bottom: 30px;
+        }
+
+        .bar {
+            width: 35px;
+            background-color: var(--bar-color);
+            transition: height 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* 計數陣列顯示區 */
+        .count-array-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--header-color);
+        }
+
+        #count-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .count-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .count-index {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+        }
+
+        .count-box {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--count-box-bg);
+            border: 2px solid var(--count-box-border);
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--text-color);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .count-box.highlight {
+            background-color: var(--read-color);
+            color: white;
+            border-color: var(--read-color);
+            transform: scale(1.1);
+        }
+        .count-box.write-highlight {
+            background-color: var(--write-color);
+            color: white;
+            border-color: var(--write-color);
+            transform: scale(1.1);
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--header-color);
+            color: var(--background-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 5px 10px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        ul, ol {
+            padding-left: 20px;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            background-color: var(--card-bg-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .input-controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            width: 100%;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-controls input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            min-width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home">← 回首頁</a>
+    <div class="container">
+        <header>
+            <h1>計數排序法 (Counting Sort) 視覺化工具</h1>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>視覺化展示</h2>
+                <div class="visualization-area">
+                    <div id="bar-container"></div>
+                    
+                    <div class="count-array-title">計數陣列 (Count Array)</div>
+                    <div id="count-container"></div>
+
+                    <div class="legend">
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--read-color);"></div> 掃描與計數中</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--write-color);"></div> 寫回陣列中</div>
+                        <div class="legend-item"><div class="color-box" style="background-color: var(--sorted-color);"></div> 排序完成</div>
+                    </div>
+                    <div class="controls">
+                        <button id="start-sort-btn">開始排序</button>
+                        <button id="next-step-btn">下一步</button>
+                        <button id="reset-btn">隨機產生</button>
+                    </div>
+                    <div class="input-controls">
+                        <div class="input-row">
+                            <input type="text" id="custom-input" placeholder="輸入數字(限0~20), 逗號分隔">
+                            <button id="start-custom-sort-btn">套用自訂數字</button>
+                        </div>
+                        <div class="input-row">
+                            <label for="speed-slider">播放速度:</label>
+                            <input type="range" id="speed-slider" min="50" max="1500" value="400" style="direction: rtl;">
+                            <span id="speed-value">400ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>操作原理</h2>
+                <p>計數排序法 (Counting Sort) 是一種<strong>非比較型</strong>的排序演算法。它不依賴元素之間的比較，而是利用陣列的索引（Index）來記錄元素出現的次數。</p>
+                <p>它的核心思想是：找出陣列中的最大值 <code>k</code>，建立一個長度為 <code>k+1</code> 的新陣列（計數陣列）。接著走訪原本的陣列，每遇到一個數字，就在計數陣列對應的索引位置將次數加一。最後，按照計數陣列的順序和次數，依序將數字填回原本的陣列中，排序就完成了。</p>
+            </div>
+
+            <div class="card">
+                <h2>操作過程</h2>
+                <ol>
+                    <li><strong>找出最大值：</strong> 掃描整個陣列，找出其中的最大值 <code>k</code>。</li>
+                    <li><strong>建立計數陣列：</strong> 建立一個長度為 <code>k+1</code> 的計數陣列，並將所有元素初始化為 0。</li>
+                    <li><strong>統計次數：</strong> 走訪原陣列，遇到數字 <code>x</code>，就將計數陣列索引為 <code>x</code> 的位置加 1。</li>
+                    <li><strong>寫回原陣列：</strong> 從頭掃描計數陣列，索引 <code>i</code> 的位置值為 <code>c</code> 時，代表數字 <code>i</code> 出現了 <code>c</code> 次，依序將 <code>c</code> 個 <code>i</code> 寫回原陣列即可。</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>複雜度分析</h2>
+                <ul>
+                    <li><strong>時間複雜度:</strong> <code>O(n + k)</code><br>其中 <code>n</code> 是陣列長度，<code>k</code> 是陣列中的最大值。因為只需要走訪原陣列和計數陣列各一次，速度非常快（線性時間）。</li>
+                    <li><strong>空間複雜度:</strong> <code>O(k)</code><br>需要一個額外的計數陣列，長度取決於原陣列中的最大數字 <code>k</code>。如果 <code>k</code> 極大（例如數字包含一百萬），則會非常消耗記憶體，因此<strong>計數排序只適合用在資料範圍較小且集中的情況</strong>。</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <div id="theme-toggle" title="切換主題">
+        <span id="theme-icon">🌙</span>
+    </div>
+
+    <script>
+        const barContainer = document.getElementById('bar-container');
+        const countContainer = document.getElementById('count-container');
+        const startSortBtn = document.getElementById('start-sort-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const customInput = document.getElementById('custom-input');
+        const startCustomSortBtn = document.getElementById('start-custom-sort-btn');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+
+        let data = [];
+        let steps = [];
+        let currentStep = 0;
+        let isSorting = false;
+
+        // 監聽速度拉桿
+        speedSlider.addEventListener('input', (e) => {
+            speedValue.innerText = `${e.target.value}ms`;
+        });
+
+        // 渲染主柱狀圖
+        const renderBars = (currentArr, highlightIndex = -1, mode = '') => {
+            barContainer.innerHTML = '';
+            
+            // 為了讓柱子高度固定比例，固定最大值為 20 (或陣列實際最大值)
+            const maxVal = Math.max(...currentArr, 20); 
+
+            currentArr.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                
+                // 若值為0給個最小高度避免看不見
+                let heightPixel = (value / maxVal) * 180;
+                if (heightPixel < 5) heightPixel = 5; 
+                bar.style.height = `${heightPixel}px`; 
+
+                if (index === highlightIndex) {
+                    if (mode === 'read') bar.style.backgroundColor = 'var(--read-color)';
+                    if (mode === 'write') bar.style.backgroundColor = 'var(--write-color)';
+                } else if (mode === 'done') {
+                    bar.style.backgroundColor = 'var(--sorted-color)';
+                }
+
+                const label = document.createElement('span');
+                label.classList.add('bar-label');
+                label.innerText = value;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+            });
+        };
+
+        // 渲染下方的計數陣列
+        const renderCountArray = (countArr, highlightIndex = -1, mode = '') => {
+            countContainer.innerHTML = '';
+            countArr.forEach((count, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('count-box-wrapper');
+
+                const indexLabel = document.createElement('div');
+                indexLabel.classList.add('count-index');
+                indexLabel.innerText = index;
+
+                const box = document.createElement('div');
+                box.classList.add('count-box');
+                box.innerText = count;
+
+                if (index === highlightIndex) {
+                    if (mode === 'read') box.classList.add('highlight');
+                    if (mode === 'write') box.classList.add('write-highlight');
+                }
+
+                wrapper.appendChild(indexLabel);
+                wrapper.appendChild(box);
+                countContainer.appendChild(wrapper);
+            });
+        };
+
+        // 計數排序邏輯並記錄步驟
+        const prepareSteps = () => {
+            steps = [];
+            let tempArr = [...data];
+            let maxVal = Math.max(...tempArr, 0);
+            
+            // 初始化計數陣列
+            let countArr = new Array(maxVal + 1).fill(0);
+            
+            // 初始狀態記錄
+            steps.push({ type: 'init', arr: [...tempArr], counts: [...countArr] });
+
+            // 1. 計算次數 (Read Phase)
+            for (let i = 0; i < tempArr.length; i++) {
+                let val = tempArr[i];
+                countArr[val]++;
+                steps.push({ 
+                    type: 'read', 
+                    arr: [...tempArr], 
+                    counts: [...countArr], 
+                    arrIdx: i, 
+                    countIdx: val 
+                });
+            }
+
+            // 2. 寫回陣列 (Write Phase)
+            let targetIdx = 0;
+            for (let i = 0; i <= maxVal; i++) {
+                while (countArr[i] > 0) {
+                    tempArr[targetIdx] = i;
+                    countArr[i]--;
+                    steps.push({ 
+                        type: 'write', 
+                        arr: [...tempArr], 
+                        counts: [...countArr], 
+                        arrIdx: targetIdx, 
+                        countIdx: i 
+                    });
+                    targetIdx++;
+                }
+            }
+
+            // 完成
+            steps.push({ type: 'done', arr: [...tempArr], counts: [...countArr] });
+            currentStep = 0;
+        };
+
+        // 執行步驟
+        const executeStep = () => {
+            if (currentStep >= steps.length) {
+                setButtonsState(false);
+                return;
+            }
+
+            const step = steps[currentStep];
+
+            if (step.type === 'init') {
+                renderBars(step.arr);
+                renderCountArray(step.counts);
+            } else if (step.type === 'read') {
+                renderBars(step.arr, step.arrIdx, 'read');
+                renderCountArray(step.counts, step.countIdx, 'read');
+            } else if (step.type === 'write') {
+                renderBars(step.arr, step.arrIdx, 'write');
+                renderCountArray(step.counts, step.countIdx, 'write');
+            } else if (step.type === 'done') {
+                renderBars(step.arr, -1, 'done');
+                renderCountArray(step.counts);
+                setButtonsState(false);
+            }
+
+            currentStep++;
+        };
+
+        // 重設/產生隨機陣列
+        const resetArray = () => {
+            isSorting = false;
+            // 為了畫面美觀，數字限制在 0~15 之間
+            data = Array.from({ length: 12 }, () => Math.floor(Math.random() * 16));
+            
+            // 初始渲染
+            let maxVal = Math.max(...data, 0);
+            renderBars(data);
+            renderCountArray(new Array(maxVal + 1).fill(0));
+            
+            prepareSteps();
+            setButtonsState(false);
+        };
+
+        const setButtonsState = (disabled) => {
+            startSortBtn.disabled = disabled;
+            nextStepBtn.disabled = disabled;
+            startCustomSortBtn.disabled = disabled;
+        };
+
+        // 事件綁定
+        startSortBtn.addEventListener('click', async () => {
+            if (currentStep >= steps.length) prepareSteps();
+            isSorting = true;
+            setButtonsState(true);
+            resetBtn.disabled = true;
+
+            while (currentStep < steps.length && isSorting) {
+                executeStep();
+                let delay = parseInt(speedSlider.value);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            
+            resetBtn.disabled = false;
+        });
+
+        nextStepBtn.addEventListener('click', executeStep);
+        
+        resetBtn.addEventListener('click', resetArray);
+
+        startCustomSortBtn.addEventListener('click', () => {
+            const inputVal = customInput.value;
+            const arr = inputVal.split(',').map(item => parseInt(item.trim())).filter(item => !isNaN(item));
+            
+            if (arr.length > 0 && arr.length <= 20) {
+                const maxInArr = Math.max(...arr);
+                if (maxInArr > 30) {
+                    alert('為了視覺化排版美觀，請避免輸入大於 30 的數字！');
+                    return;
+                }
+                // 檢查是否有負數 (基礎計數排序不支援負數)
+                const minInArr = Math.min(...arr);
+                if (minInArr < 0) {
+                    alert('基礎計數排序法不支援負數，請輸入 0 或正整數！');
+                    return;
+                }
+
+                data = arr;
+                let maxVal = Math.max(...data, 0);
+                renderBars(data);
+                renderCountArray(new Array(maxVal + 1).fill(0));
+                
+                prepareSteps();
+                setButtonsState(false);
+            } else {
+                alert('請輸入有效的數字格式，並以半形逗號分隔 (最多 20 個數字)。');
+            }
+        });
+
+        // 暗黑模式切換
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        let isDarkMode = false;
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--background-color', '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', '#e6e6e6');
+                document.documentElement.style.setProperty('--card-bg-color', '#16213e');
+                document.documentElement.style.setProperty('--header-color', '#4ea8de');
+                document.documentElement.style.setProperty('--count-box-bg', '#1f2937');
+                document.documentElement.style.setProperty('--count-box-border', '#4b5563');
+                themeIcon.innerText = '☀️';
+            } else {
+                document.documentElement.style.setProperty('--background-color', '#ecf0f1');
+                document.documentElement.style.setProperty('--text-color', '#2c3e50');
+                document.documentElement.style.setProperty('--card-bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--header-color', '#34495e');
+                document.documentElement.style.setProperty('--count-box-bg', '#fff');
+                document.documentElement.style.setProperty('--count-box-border', '#bdc3c7');
+                themeIcon.innerText = '🌙';
+            }
+        });
+
+        // 網頁載入時初始化
+        resetArray();
+    </script>
+</body>
+</html>
